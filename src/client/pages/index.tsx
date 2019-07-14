@@ -13,7 +13,6 @@ class HomePage extends Component<HomeProps, HomeState> {
             color: #777;
             display: flex;
             height: 100vh;
-            font-size: 24pt;
             padding-top: 200px;
             align-items: center;
             flex-direction: column;
@@ -25,7 +24,7 @@ class HomePage extends Component<HomeProps, HomeState> {
         `}</style>
 
         <div className="container">
-          <div>Versity Search</div>
+          <div className="is-size-3">Versity Search</div>
 
           <div className="field search">
             <p className="control has-icons-right">
@@ -35,8 +34,8 @@ class HomePage extends Component<HomeProps, HomeState> {
                 className="input is-medium"
                 placeholder="Search for papers by programme, level, course code and title"
                 />
-              <span className="icon is-small icon-right">
-                <i className="fas fa-check" />
+              <span className="icon is-small is-right">
+                <i className="fas fa-check"></i>
               </span>
             </p>
           </div>
