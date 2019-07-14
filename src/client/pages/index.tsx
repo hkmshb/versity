@@ -1,19 +1,49 @@
-const contentStyle = {
-  color: "#777",
-  width: "600px",
-  height: "500px",
-  fontSize: "24pt",
-  margin: "100px auto 0px",
-  textAlign: "center" as "center"
+import React, { Component } from "react";
+
+
+interface HomeProps {}
+interface HomeState {}
+
+class HomePage extends Component<HomeProps, HomeState> {
+  render() {
+    return (
+      <React.Fragment>
+        <style jsx>{`
+          .container {
+            color: #777;
+            display: flex;
+            height: 100vh;
+            font-size: 24pt;
+            padding-top: 200px;
+            align-items: center;
+            flex-direction: column;
+          }
+
+          .field.search {
+            width: 60%;
+          }
+        `}</style>
+
+        <div className="container">
+          <div>Versity Search</div>
+
+          <div className="field search">
+            <p className="control has-icons-right">
+              <input
+                name="q"
+                type="text"
+                className="input is-medium"
+                placeholder="Search for papers by programme, level, course code and title"
+                />
+              <span className="icon is-small icon-right">
+                <i className="fas fa-check" />
+              </span>
+            </p>
+          </div>
+        </div>
+      </React.Fragment>
+    );
+  }f
 }
 
-
-function home() {
-  return (
-    <div style={contentStyle}>
-      <span>Welcome to Versity!</span>
-    </div>
-  );
-}
-
-export default home;
+export default HomePage;

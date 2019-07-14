@@ -1,0 +1,27 @@
+// colours
+//--------
+$base-text-color: #4a4a4a;
+$navitem-color: hsl(0, 0%, 48%);
+$line-color: hsl(0, 0%, 90%);
+$label-color: rgb(141, 153, 166);
+
+
+// layout
+//-------
+$base-font-family: 'Nunito', 'Roboto Condensed', sans-serif;
+$heading-font-family: 'Raleway', sans-serif;
+$font-family-fa: 'Font Awesome 5 Free';
+$base-font-size: 14px;
+
+$navbar-height: 2rem;
+
+// bulma-overrides
+$modal-close-top: 8px;
+$modal-close-right: 8px;
+$modal-close-dimensions: 10px;
+$modal-content-width: 440px;
+$modal-card-head-padding: 7px;
+$modal-card-body-padding: 15px 8px;
+$modal-card-foot-padding: 7px;
+$modal-card-title-size: 1.3rem;
+$modal-card-title-line-height: 1;
