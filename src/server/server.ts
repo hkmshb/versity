@@ -1,10 +1,11 @@
 import next from "next";
-import express, { Express } from "express";
-import { CLIENT_PATH } from "./constants";
+import express, { Application } from "express";
+import { CLIENT_PATH, API_RELPATH } from "./constants";
+import ApiRoutes from "./routes";
 
 
 class VersityServer {
-  public app: Express;
+  public app: Application;
   public clientApp: any;  // TODO: use proper type
 
   constructor(clientPath: string, debug: boolean=true) {
@@ -14,8 +15,8 @@ class VersityServer {
   }
 
   private configureApp(): void {
-    this.configureClientServer();
     this.configureApiServer();
+    this.configureClientServer();
   }
 
   private configureClientServer(): void {
@@ -25,10 +26,11 @@ class VersityServer {
   }
 
   private configureApiServer() {
-    // TODO: pending...
+    const apiRoutes = new ApiRoutes(this.app);
+    this.app.use(`/${API_RELPATH}`, apiRoutes.router);
   }
 
-  public ready(callback: (app: Express) => void): void {
+  public ready(callback: (app: Application) => void): void {
     this.clientApp.prepare().then(() => {
       callback(this.app);
     });
@@ -39,6 +41,6 @@ const port: number = Number(process.env.PORT) || 3000;
 const debug: boolean = process.env.NODE_ENV !== 'production';
 
 const server = new VersityServer(CLIENT_PATH, debug);
-server.ready((app: Express) => {
+server.ready((app: Application) => {
   app.listen(port, () => console.log(`\n>> Versity running at "http://localhost:${port}/"`));
 });
