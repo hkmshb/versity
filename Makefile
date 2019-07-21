@@ -12,6 +12,10 @@ help:
 	@echo "  up               : to start both the front-end & backend services"
 
 
+install:
+	yarn ${CLIENT_DIR} install
+	yarn ${SERVER_DIR} install
+
 client:
 	source .env && \
 	PORT=${WEB_PORT} yarn ${CLIENT_DIR} start
