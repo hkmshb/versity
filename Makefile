@@ -13,7 +13,9 @@ help:
 
 
 client:
-	PORT=9000 yarn ${CLIENT_DIR} start
+	source .env && \
+	PORT=${WEB_PORT} yarn ${CLIENT_DIR} start
 
 server:
-	PORT=9001 yarn ${SERVER_DIR} start
+	source .env && \
+	yarn ${SERVER_DIR} start

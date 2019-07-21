@@ -1,11 +1,13 @@
 import { Application } from "express";
 import VersityServer from "./app";
+import * as conf from './constants';
 
 
-const port: number = Number(process.env.PORT) || 3000;
-const server = new VersityServer().ready((app: Application) => {
+const appUrl = conf.VERSITY_URL;
+
+new VersityServer().ready((app: Application) => {
   app.listen(
-    port,
-    () => console.log(`\n>> Versity running at "http://localhost:${port}/"`)
+    Number(appUrl.port), appUrl.hostname,
+    () => console.log(`\n>> Listening at "${appUrl.href}" ...`)
   );
 })

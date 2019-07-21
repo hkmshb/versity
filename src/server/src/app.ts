@@ -13,7 +13,7 @@ class VersityServer {
 
   private configureApp(): void {
     const apiRoutes = new ApiRoutes(this.app);
-    this.app.use(`/${API_RELPATH}`, apiRoutes.router);
+    this.app.use(apiRoutes.router);
   }
 
   public ready(callback: (app: Application) => void): void {
