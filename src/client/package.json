@@ -1,13 +1,13 @@
 {
-  "name": "versity",
+  "name": "versity-client",
   "version": "0.1.0",
   "private": true,
+  "description": "Versity Web UI",
   "scripts": {
     "start": "concurrently \"yarn watch-css\" \"react-scripts start\"",
     "build": "concurrently \"yarn build-css\" \"react-scripts build\"",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-
     "build-css": "node-sass-chokidar --include-path ./node_modules ./src/components/assets/scss/versity.scss -o ./src/components/assets",
     "watch-css": "yarn build-css && node-sass-chokidar --include-path ./node_modules ./src/components/assets/scss/versity.scss -o ./src/components/assets --watch --recursive"
   },

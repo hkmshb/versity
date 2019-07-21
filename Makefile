@@ -1,5 +1,6 @@
 # vars
 CLIENT_DIR = --cwd ./src/client
+SERVER_DIR = --cwd ./src/server
 
 .PHONY: client
 
@@ -12,12 +13,7 @@ help:
 
 
 client:
-	yarn ${CLIENT_DIR} start
+	PORT=9000 yarn ${CLIENT_DIR} start
 
 server:
-	echo "pending ..."
-
-up:
-	@echo ">> Starting the Server & Client services ..."
-	$(MAKE) client &
-	$(MAKE) server &
+	PORT=9001 yarn ${SERVER_DIR} start
