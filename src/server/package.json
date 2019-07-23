@@ -7,7 +7,8 @@
   "scripts": {
     "build": "rm -rf ./build && tsc",
     "watch": "tsc --watch",
-    "start": "nodemon --watch 'src/**/*.ts' --exec ts-node 'src/index.ts'"
+    "start": "nodemon --watch 'src/**/*.ts' --exec ts-node 'src/index.ts'",
+    "test": "mocha -r ts-node/register tests/**/test_*.ts"
   },
   "dependencies": {
     "express": "^4.17.1",
@@ -22,6 +23,7 @@
     "chai": "^4.2.0",
     "mocha": "^6.2.0",
     "nodemon": "^1.19.1",
+    "sqlite3": "^4.0.9",
     "ts-node": "^8.3.0",
     "tslint": "^5.18.0",
     "typescript": "^3.5.3"

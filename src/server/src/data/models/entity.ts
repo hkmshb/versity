@@ -17,4 +17,9 @@ export abstract class BaseEntity{
   @UpdateDateColumn()
   date_updated: Date;
 
+  constructor(name: string, title: string){
+    this.name = name;
+    this.title = title;
+  }
+
 }
