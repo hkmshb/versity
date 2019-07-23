@@ -1,4 +1,4 @@
-import {School, Department, createDbConnection, Programme} from '../src/data/models';
+import {School, Department, createDbConnection, Programme, Course} from '../src/data/models';
 import {getConnection, Connection, Repository} from 'typeorm';
 import * as chai from 'chai';
 import 'mocha';
@@ -9,6 +9,7 @@ describe('Models', ()=>{
   let schoolRepository: Repository<School>;
   let departmentRepository: Repository<Department>;
   let programmeRepository: Repository<Programme>;
+  let courseRepository: Repository<Course>;
 
 
   before(async ()=>{
@@ -17,6 +18,7 @@ describe('Models', ()=>{
       schoolRepository = connection.getRepository(School);
       departmentRepository = connection.getRepository(Department);
       programmeRepository = connection.getRepository(Programme);
+      courseRepository = connection.getRepository(Course);
     }
     catch(e){
       console.error(`Initialize versity db failed with `, e);
@@ -89,7 +91,34 @@ describe('Models', ()=>{
       chai.assert(department.programmes.length === 1);
       chai.assert(programme.department.id === department.id);
     })
-  })
+  });
+
+  describe('#CreateCourse', ()=>{
+    it('should add a course with a parent programme in db', async ()=>{
+      let faculty = new School('Faculty', 'fac', 'fstr', 'fstt', 'ftown');
+      let department = new Department('Department', 'dept', faculty);
+      let programme = new Programme('programme', 'prg', 5, department);
+      let course = new Course('course name', 'crs', 'mee203', 3, 300, programme);
+      await schoolRepository.save(faculty);
+      await departmentRepository.save(department);
+      await programmeRepository.save(programme);
+      await courseRepository.save(course);
+      faculty = await schoolRepository.findOne(faculty.id, {relations: ['departments']});
+      department = await departmentRepository.findOne(department.id, {relations: ['faculty', 'programmes']});
+      programme = await programmeRepository.findOne(programme.id, {relations: ['department', 'courses']})
+      course = await courseRepository.findOne(course.id, {relations: ['programme']});
+      chai.assert.isNumber(faculty.id);
+      chai.assert.isNumber(department.id);
+      chai.assert.isNumber(programme.id);
+      chai.assert.isNumber(course.id);
+      chai.assert(faculty.departments.length === 1);
+      chai.assert(department.faculty.id === faculty.id);
+      chai.assert(department.programmes.length === 1);
+      chai.assert(programme.department.id === department.id);
+      chai.assert(programme.courses.length === 1);
+      chai.assert(course.programme.id === programme.id);
+    })
+  });
 })
 
 
