@@ -1,4 +1,4 @@
-import {School, Department, createDbConnection, Programme, Course} from '../src/data/models';
+import {School, Department, createDbConnection, Programme, Course, Lecturer} from '../src/data/models';
 import {getConnection, Connection, Repository} from 'typeorm';
 import * as chai from 'chai';
 import 'mocha';
@@ -10,6 +10,7 @@ describe('Models', ()=>{
   let departmentRepository: Repository<Department>;
   let programmeRepository: Repository<Programme>;
   let courseRepository: Repository<Course>;
+  let lecturerRepository: Repository<Lecturer>;
 
 
   before(async ()=>{
@@ -19,6 +20,7 @@ describe('Models', ()=>{
       departmentRepository = connection.getRepository(Department);
       programmeRepository = connection.getRepository(Programme);
       courseRepository = connection.getRepository(Course);
+      lecturerRepository = connection.getRepository(Lecturer);
     }
     catch(e){
       console.error(`Initialize versity db failed with `, e);
@@ -90,6 +92,27 @@ describe('Models', ()=>{
       chai.assert(department.faculty.id === faculty.id);
       chai.assert(department.programmes.length === 1);
       chai.assert(programme.department.id === department.id);
+    })
+  });
+
+  describe('#CreateLecturer', ()=>{
+    it('should add a lecturer with a parent department in db', async ()=>{
+      let faculty = new School('Faculty', 'fac', 'fstr', 'fstt', 'ftown');
+      let department = new Department('Department', 'dept', faculty);
+      let lecturer = new Lecturer('Mr. Adamu', 'adm', department);
+      await schoolRepository.save(faculty);
+      await departmentRepository.save(department);
+      await lecturerRepository.save(lecturer);
+      faculty = await schoolRepository.findOne(faculty.id, {relations: ['departments']});
+      department = await departmentRepository.findOne(department.id, {relations: ['faculty', 'lecturers']});
+      lecturer = await lecturerRepository.findOne(lecturer.id, {relations: ['department']})
+      chai.assert.isNumber(faculty.id);
+      chai.assert.isNumber(department.id);
+      chai.assert.isNumber(lecturer.id);
+      chai.assert(faculty.departments.length === 1);
+      chai.assert(department.faculty.id === faculty.id);
+      chai.assert(department.lecturers.length === 1);
+      chai.assert(lecturer.department.id === department.id);
     })
   });
 
