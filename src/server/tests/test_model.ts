@@ -1,4 +1,4 @@
-import {School, Department, createDbConnection} from '../src/data/models';
+import {School, Department, createDbConnection, Programme} from '../src/data/models';
 import {getConnection, Connection, Repository} from 'typeorm';
 import * as chai from 'chai';
 import 'mocha';
@@ -8,6 +8,7 @@ describe('Models', ()=>{
   let connection: Connection;
   let schoolRepository: Repository<School>;
   let departmentRepository: Repository<Department>;
+  let programmeRepository: Repository<Programme>;
 
 
   before(async ()=>{
@@ -15,6 +16,7 @@ describe('Models', ()=>{
       connection = await createDbConnection("versity_test.sqlite");
       schoolRepository = connection.getRepository(School);
       departmentRepository = connection.getRepository(Department);
+      programmeRepository = connection.getRepository(Programme);
     }
     catch(e){
       console.error(`Initialize versity db failed with `, e);
@@ -65,6 +67,27 @@ describe('Models', ()=>{
       chai.assert.isNumber(department.id);
       chai.assert(faculty.departments.length === 1);
       chai.assert(department.faculty.id === faculty.id);
+    })
+  });
+
+  describe('#CreateProgramme', ()=>{
+    it('should add a programme with a parent department in db', async ()=>{
+      let faculty = new School('Faculty', 'fac', 'fstr', 'fstt', 'ftown');
+      let department = new Department('Department', 'dept', faculty);
+      let programme = new Programme('programme', 'prg', 5, department);
+      await schoolRepository.save(faculty);
+      await departmentRepository.save(department);
+      await programmeRepository.save(programme);
+      faculty = await schoolRepository.findOne(faculty.id, {relations: ['departments']});
+      department = await departmentRepository.findOne(department.id, {relations: ['faculty', 'programmes']});
+      programme = await programmeRepository.findOne(programme.id, {relations: ['department']})
+      chai.assert.isNumber(faculty.id);
+      chai.assert.isNumber(department.id);
+      chai.assert.isNumber(programme.id);
+      chai.assert(faculty.departments.length === 1);
+      chai.assert(department.faculty.id === faculty.id);
+      chai.assert(department.programmes.length === 1);
+      chai.assert(programme.department.id === department.id);
     })
   })
 })

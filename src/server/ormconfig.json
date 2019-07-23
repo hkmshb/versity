@@ -1,5 +1,0 @@
-{
-  "entities": [
-    "src/data/models/*.ts"
-  ]
-}

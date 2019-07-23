@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import {createConnection, Connection} from 'typeorm';
-import {School, Department} from './internals';
-export {School, Department} from './internals';
+import {School, Department, Programme} from './internals';
+export {School, Department, Programme} from './internals';
 
 
 export async function createDbConnection(connection_url: string): Promise<Connection>{
@@ -12,7 +12,7 @@ export async function createDbConnection(connection_url: string): Promise<Connec
       synchronize: true,
       logging: false,
       entities: [
-        School, Department
+        School, Department, Programme
       ]
     }
   );
