@@ -1,4 +1,12 @@
-import {School, Department, createDbConnection, Programme, Course, Lecturer} from '../src/data/models';
+import {
+  School,
+  Department,
+  createDbConnection,
+  Programme,
+  Course,
+  Lecturer,
+  AcademicPeriod
+} from '../src/data/models';
 import {getConnection, Connection, Repository} from 'typeorm';
 import * as chai from 'chai';
 import 'mocha';
@@ -11,6 +19,7 @@ describe('Models', ()=>{
   let programmeRepository: Repository<Programme>;
   let courseRepository: Repository<Course>;
   let lecturerRepository: Repository<Lecturer>;
+  let periodRepository: Repository<AcademicPeriod>;
 
 
   before(async ()=>{
@@ -21,6 +30,7 @@ describe('Models', ()=>{
       programmeRepository = connection.getRepository(Programme);
       courseRepository = connection.getRepository(Course);
       lecturerRepository = connection.getRepository(Lecturer);
+      periodRepository = connection.getRepository(AcademicPeriod);
     }
     catch(e){
       console.error(`Initialize versity db failed with `, e);
@@ -140,6 +150,36 @@ describe('Models', ()=>{
       chai.assert(programme.department.id === department.id);
       chai.assert(programme.courses.length === 1);
       chai.assert(course.programme.id === programme.id);
+    })
+  });
+
+  describe('#CreateAcademicPeriod', ()=>{
+    it('should add an academic period with two other academic periods as children', async ()=>{
+      let faculty = new School('Faculty', 'fac', 'fstr', 'fstt', 'ftown');
+      let session = new AcademicPeriod('session', 'ssn', new Date(), new Date(),faculty);
+      let semester_one = new AcademicPeriod('first semester', 'smst1', new Date(), new Date(),faculty);
+      semester_one.parent = session;
+      let semester_two = new AcademicPeriod('second semester', 'smst2', new Date(), new Date(),faculty);
+      semester_two.parent = session;
+      await schoolRepository.save(faculty);
+      await periodRepository.save(session);
+      await periodRepository.save(semester_one);
+      await periodRepository.save(semester_two);
+      faculty = await schoolRepository.findOne(faculty.id, {relations: ['academicPeriods']});
+      session = await periodRepository.findOne(session.id, {relations: ['school', 'parent', 'children']});
+      semester_one = await periodRepository.findOne(semester_one.id, {relations: ['school', 'parent', 'children']});
+      semester_two = await periodRepository.findOne(semester_two.id, {relations: ['school', 'parent', 'children']});
+      chai.assert.isNumber(faculty.id);
+      chai.assert.isNumber(session.id);
+      chai.assert.isNumber(semester_one.id);
+      chai.assert.isNumber(semester_two.id);
+      chai.assert(faculty.academicPeriods.length === 3);
+      chai.assert(session.school.id == faculty.id);
+      chai.assert(semester_one.school.id == faculty.id);
+      chai.assert(semester_two.school.id == faculty.id);
+      chai.assert(session.children.length === 2);
+      chai.assert(semester_one.parent.id === session.id);
+      chai.assert(semester_two.parent.id === session.id);
     })
   });
 })
