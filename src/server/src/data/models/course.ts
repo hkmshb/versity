@@ -1,4 +1,4 @@
-import {BaseEntity, Programme} from './internals';
+import {BaseEntity, Programme, Document} from './internals';
 import {Entity, ManyToOne, OneToMany, Column} from 'typeorm';
 
 
@@ -16,6 +16,9 @@ export class Course extends BaseEntity{
 
   @ManyToOne(type => Programme, programme => programme.courses)
   programme: Programme;
+
+  @OneToMany(type => Document, document => document.course)
+  documents: Document[];
 
   constructor(name: string, title: string, code: string, unit: number,
     level: number, programme: Programme){

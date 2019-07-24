@@ -5,7 +5,8 @@ import {
   Programme,
   Course,
   Lecturer,
-  AcademicPeriod
+  AcademicPeriod,
+  Document
 } from '../src/data/models';
 import {getConnection, Connection, Repository} from 'typeorm';
 import * as chai from 'chai';
@@ -20,6 +21,7 @@ describe('Models', ()=>{
   let courseRepository: Repository<Course>;
   let lecturerRepository: Repository<Lecturer>;
   let periodRepository: Repository<AcademicPeriod>;
+  let documentRepository: Repository<Document>;
 
 
   before(async ()=>{
@@ -31,6 +33,7 @@ describe('Models', ()=>{
       courseRepository = connection.getRepository(Course);
       lecturerRepository = connection.getRepository(Lecturer);
       periodRepository = connection.getRepository(AcademicPeriod);
+      documentRepository = connection.getRepository(Document);
     }
     catch(e){
       console.error(`Initialize versity db failed with `, e);
@@ -180,6 +183,27 @@ describe('Models', ()=>{
       chai.assert(session.children.length === 2);
       chai.assert(semester_one.parent.id === session.id);
       chai.assert(semester_two.parent.id === session.id);
+    })
+  });
+
+  describe('#CreateDocument', ()=>{
+    it('should add a document to the database', async ()=>{
+      let faculty = new School('Faculty', 'fac', 'fstr', 'fstt', 'ftown');
+      let session = new AcademicPeriod('session', 'ssn', new Date(), new Date(),faculty);
+      let department = new Department('Department', 'dept', faculty);
+      let lecturer = new Lecturer('Mr. Adamu', 'adm', department);
+      let programme = new Programme('programme', 'prg', 5, department);
+      let course = new Course('course name', 'crs', 'mee203', 3, 300, programme);
+      let document = new Document('document', 'doc', 'pdf', 4, course, lecturer, session);
+      await schoolRepository.save(faculty);
+      await periodRepository.save(session);
+      await departmentRepository.save(department);
+      await lecturerRepository.save(lecturer);
+      await programmeRepository.save(programme);
+      await courseRepository.save(course);
+      await documentRepository.save(document);
+      document = await documentRepository.findOne(document.id);
+      chai.assert(document.id !== undefined);
     })
   });
 })

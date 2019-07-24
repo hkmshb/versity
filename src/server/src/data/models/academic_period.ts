@@ -1,4 +1,4 @@
-import {BaseEntity, School} from './internals';
+import {BaseEntity, School, Document} from './internals';
 import {Entity, Column, OneToMany, ManyToOne} from 'typeorm';
 
 
@@ -16,6 +16,9 @@ export class AcademicPeriod extends BaseEntity{
 
     @OneToMany(type=> AcademicPeriod, period => period.parent)
     children: AcademicPeriod[];
+
+    @OneToMany(type => Document, document => document.academicPeriod)
+    documents: Document[];
 
     @ManyToOne(type => School, school => school.academicPeriods)
     school: School;
