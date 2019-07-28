@@ -7,15 +7,23 @@
   "scripts": {
     "build": "rm -rf ./build && tsc",
     "watch": "tsc --watch",
-    "start": "nodemon --watch 'src/**/*.ts' --exec ts-node 'src/index.ts'"
+    "start": "nodemon --watch 'src/**/*.ts' --exec ts-node 'src/index.ts'",
+    "test": "mocha -r ts-node/register tests/**/test_*.ts"
   },
   "dependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "reflect-metadata": "^0.1.13",
+    "typeorm": "^0.2.18"
   },
   "devDependencies": {
+    "@types/chai": "^4.1.7",
     "@types/express": "^4.17.0",
+    "@types/mocha": "^5.2.7",
     "@types/node": "^12.6.8",
+    "chai": "^4.2.0",
+    "mocha": "^6.2.0",
     "nodemon": "^1.19.1",
+    "sqlite3": "^4.0.9",
     "ts-node": "^8.3.0",
     "tslint": "^5.18.0",
     "typescript": "^3.5.3"
