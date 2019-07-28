@@ -26,7 +26,7 @@ describe('Models', () => {
 
   before(async () => {
     try {
-      connection = await createDbConnection('versity_test.sqlite');
+      connection = await createDbConnection('.test.sqlite');
       schoolRepository = connection.getRepository(School);
       departmentRepository = connection.getRepository(Department);
       programmeRepository = connection.getRepository(Programme);
