@@ -11,7 +11,6 @@ help:
 	@echo "  server           : to start the backend API server"
 	@echo "  up               : to start both the front-end & backend services"
 
-
 install:
 	yarn ${CLIENT_DIR} install
 	yarn ${SERVER_DIR} install
@@ -27,3 +26,7 @@ server:
 lint:
 	yarn ${CLIENT_DIR} lint; \
 	yarn ${SERVER_DIR} lint;
+
+test:
+	yarn ${CLIENT_DIR} test; \
+	yarn ${SERVER_DIR} test;

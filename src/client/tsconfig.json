@@ -20,6 +20,6 @@
     "jsx": "preserve"
   },
   "include": [
-    "src", "tests/App.test.tsx"
+    "src", "src/tests/App.test.tsx", "__tests__"
   ]
 }
