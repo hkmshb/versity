@@ -3,7 +3,7 @@ import {Entity, Column, OneToMany, ManyToOne} from 'typeorm';
 
 
 @Entity()
-export class School extends BaseEntity{
+export class School extends BaseEntity {
 
     @Column()
     addr_street: string;
@@ -27,7 +27,7 @@ export class School extends BaseEntity{
     academicPeriods: AcademicPeriod[];
 
     constructor(name: string, title: string, addr_street: string, addr_state: string,
-      addr_town: string){
+      addr_town: string) {
         super(name, title);
         this.addr_state = addr_state;
         this.addr_street = addr_street;

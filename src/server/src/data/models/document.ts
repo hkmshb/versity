@@ -1,9 +1,9 @@
 import {BaseEntity, Course, Lecturer, AcademicPeriod} from './internals';
-import {Entity, Column, OneToMany, ManyToOne} from 'typeorm';
+import {Entity, Column, ManyToOne} from 'typeorm';
 
 
 @Entity()
-export class Document extends BaseEntity{
+export class Document extends BaseEntity {
 
     @Column()
     type: string;
@@ -21,7 +21,7 @@ export class Document extends BaseEntity{
     lecturer: Lecturer;
 
     constructor(name: string, title: string, type: string, page_count: number,
-      course: Course, lecturer: Lecturer, academicPeriod: AcademicPeriod){
+      course: Course, lecturer: Lecturer, academicPeriod: AcademicPeriod) {
         super(name, title);
         this.type = type;
         this.page_count = page_count;

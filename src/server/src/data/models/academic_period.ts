@@ -3,7 +3,7 @@ import {Entity, Column, OneToMany, ManyToOne} from 'typeorm';
 
 
 @Entity()
-export class AcademicPeriod extends BaseEntity{
+export class AcademicPeriod extends BaseEntity {
 
     @Column()
     date_begin: Date;
@@ -24,7 +24,7 @@ export class AcademicPeriod extends BaseEntity{
     school: School;
 
     constructor(name: string, title: string, date_begin: Date, date_end: Date,
-      school: School){
+      school: School) {
         super(name, title);
         this.date_begin = date_begin;
         this.date_end = date_end;

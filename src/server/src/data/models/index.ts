@@ -5,7 +5,7 @@ export {School, Department, Programme, Course, Lecturer, AcademicPeriod, Documen
 
 
 
-export async function createDbConnection(connection_url: string): Promise<Connection>{
+export async function createDbConnection(connection_url: string): Promise<Connection> {
   return await createConnection(
     {
       type: "sqlite",

@@ -3,7 +3,7 @@ import {Entity, ManyToOne, OneToMany, Column} from 'typeorm';
 
 
 @Entity()
-export class Course extends BaseEntity{
+export class Course extends BaseEntity {
 
   @Column()
   code: string;
@@ -21,7 +21,7 @@ export class Course extends BaseEntity{
   documents: Document[];
 
   constructor(name: string, title: string, code: string, unit: number,
-    level: number, programme: Programme){
+    level: number, programme: Programme) {
     super(name, title);
     this.code = code;
     this.unit = unit;

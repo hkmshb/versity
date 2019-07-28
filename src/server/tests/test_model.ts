@@ -13,7 +13,7 @@ import * as chai from 'chai';
 import 'mocha';
 
 
-describe('Models', ()=>{
+describe('Models', () => {
   let connection: Connection;
   let schoolRepository: Repository<School>;
   let departmentRepository: Repository<Department>;
@@ -24,8 +24,8 @@ describe('Models', ()=>{
   let documentRepository: Repository<Document>;
 
 
-  before(async ()=>{
-    try{
+  before(async () => {
+    try {
       connection = await createDbConnection("versity_test.sqlite");
       schoolRepository = connection.getRepository(School);
       departmentRepository = connection.getRepository(Department);
@@ -35,13 +35,13 @@ describe('Models', ()=>{
       periodRepository = connection.getRepository(AcademicPeriod);
       documentRepository = connection.getRepository(Document);
     }
-    catch(e){
+    catch(e) {
       console.error(`Initialize versity db failed with `, e);
       throw e;
     }
   })
 
-  describe('#CreateSchool', ()=>{
+  describe('#CreateSchool', () => {
 
     it('should add a school to the database', async function(){
       let school = new School("School Name", "Generated School","School street",
@@ -54,7 +54,7 @@ describe('Models', ()=>{
       chai.assert.exists(savedSchool.date_updated);
     });
 
-    it('should add school with two children', async function(){
+    it('should add school with two children', async function() {
       let parent = new School('sname','title', 'str', 'sstate', 'stwon');
       let child_one = new School('cname', 'ctitle', 'cstr', 'cstate', 'ctown');
       child_one.parent = parent;
@@ -72,8 +72,8 @@ describe('Models', ()=>{
     });
   });
 
-  describe('#CreateDepartment', ()=>{
-    it('should add a department with a parent faculty in the db', async ()=>{
+  describe('#CreateDepartment', () => {
+    it('should add a department with a parent faculty in the db', async () => {
       let faculty = new School('Faculty', 'fac', 'fstr', 'fstt', 'ftown');
       let department = new Department('Department', 'dept', faculty);
       await schoolRepository.save(faculty);
@@ -87,8 +87,8 @@ describe('Models', ()=>{
     })
   });
 
-  describe('#CreateProgramme', ()=>{
-    it('should add a programme with a parent department in db', async ()=>{
+  describe('#CreateProgramme', () => {
+    it('should add a programme with a parent department in db', async () => {
       let faculty = new School('Faculty', 'fac', 'fstr', 'fstt', 'ftown');
       let department = new Department('Department', 'dept', faculty);
       let programme = new Programme('programme', 'prg', 5, department);
@@ -108,8 +108,8 @@ describe('Models', ()=>{
     })
   });
 
-  describe('#CreateLecturer', ()=>{
-    it('should add a lecturer with a parent department in db', async ()=>{
+  describe('#CreateLecturer', () => {
+    it('should add a lecturer with a parent department in db', async () => {
       let faculty = new School('Faculty', 'fac', 'fstr', 'fstt', 'ftown');
       let department = new Department('Department', 'dept', faculty);
       let lecturer = new Lecturer('Mr. Adamu', 'adm', department);
@@ -129,8 +129,8 @@ describe('Models', ()=>{
     })
   });
 
-  describe('#CreateCourse', ()=>{
-    it('should add a course with a parent programme in db', async ()=>{
+  describe('#CreateCourse', () => {
+    it('should add a course with a parent programme in db', async () => {
       let faculty = new School('Faculty', 'fac', 'fstr', 'fstt', 'ftown');
       let department = new Department('Department', 'dept', faculty);
       let programme = new Programme('programme', 'prg', 5, department);
@@ -156,8 +156,8 @@ describe('Models', ()=>{
     })
   });
 
-  describe('#CreateAcademicPeriod', ()=>{
-    it('should add an academic period with two other academic periods as children', async ()=>{
+  describe('#CreateAcademicPeriod', () => {
+    it('should add an academic period with two other academic periods as children', async () => {
       let faculty = new School('Faculty', 'fac', 'fstr', 'fstt', 'ftown');
       let session = new AcademicPeriod('session', 'ssn', new Date(), new Date(),faculty);
       let semester_one = new AcademicPeriod('first semester', 'smst1', new Date(), new Date(),faculty);
@@ -186,8 +186,8 @@ describe('Models', ()=>{
     })
   });
 
-  describe('#CreateDocument', ()=>{
-    it('should add a document to the database', async ()=>{
+  describe('#CreateDocument', () => {
+    it('should add a document to the database', async () => {
       let faculty = new School('Faculty', 'fac', 'fstr', 'fstt', 'ftown');
       let session = new AcademicPeriod('session', 'ssn', new Date(), new Date(),faculty);
       let department = new Department('Department', 'dept', faculty);
@@ -207,5 +207,3 @@ describe('Models', ()=>{
     })
   });
 })
-
-
