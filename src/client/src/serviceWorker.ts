@@ -20,12 +20,12 @@ const isLocalhost = Boolean(
     )
 );
 
-type Config = {
-  onSuccess?: (registration: ServiceWorkerRegistration) => void;
-  onUpdate?: (registration: ServiceWorkerRegistration) => void;
-};
+interface IConfig {
+  onSuccess?(registration: ServiceWorkerRegistration): void;
+  onUpdate?(registration: ServiceWorkerRegistration): void;
+}
 
-export function register(config?: Config) {
+export function register(config?: IConfig) {
   if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
     // The URL constructor is available in all browsers that support SW.
     const publicUrl = new URL(

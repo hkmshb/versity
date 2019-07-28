@@ -23,3 +23,7 @@ client:
 server:
 	source .env && \
 	yarn ${SERVER_DIR} start
+
+lint:
+	yarn ${CLIENT_DIR} lint; \
+	yarn ${SERVER_DIR} lint;
