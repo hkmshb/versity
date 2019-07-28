@@ -1,6 +1,6 @@
 import { Application } from 'express';
 import VersityServer from './app';
-import * as conf from './constants';
+import * as conf from './config';
 import { logger } from './utils';
 
 

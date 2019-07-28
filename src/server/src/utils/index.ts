@@ -1,12 +1,11 @@
 import pino from 'pino';
+import * as conf from '../config';
 
 
-let logLevel = process.env.LOG_LEVEL;
-if (!logLevel) {
-  logLevel = (process.env.NODE_ENV === 'production' ? 'info' : 'debug');
-}
-
+/**
+ * LOGGER
+ */
 export const logger = pino({
   name: 'versity',
-  level: logLevel
+  level: conf.LOG_LEVEL
 });
