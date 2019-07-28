@@ -9,7 +9,7 @@
     "watch": "tsc --watch",
     "start": "nodemon --watch 'src/**/*.ts' --exec ts-node 'src/index.ts'",
     "test": "mocha -r ts-node/register tests/**/test_*.ts",
-    "lint": "tslint -c tslint.json 'src/**/*.{ts,tsx}'"
+    "lint": "tslint -c tslint.json 'src/**/*.{ts,tsx}' 'tests/**/*.test.ts'"
   },
   "dependencies": {
     "@types/pino": "^5.8.8",
