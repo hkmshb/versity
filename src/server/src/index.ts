@@ -1,6 +1,7 @@
-import { Application } from "express";
-import VersityServer from "./app";
+import { Application } from 'express';
+import VersityServer from './app';
 import * as conf from './constants';
+import { logger } from './utils';
 
 
 const appUrl = conf.VERSITY_URL;
@@ -8,6 +9,6 @@ const appUrl = conf.VERSITY_URL;
 new VersityServer().ready((app: Application) => {
   app.listen(
     Number(appUrl.port), appUrl.hostname,
-    () => console.log(`\n>> Listening at "${appUrl.href}" ...`)
+    () => logger.info(`\n>> Listening at "${appUrl.href}" ...`)
   );
-})
+});
