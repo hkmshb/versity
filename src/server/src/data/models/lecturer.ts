@@ -1,9 +1,9 @@
-import {BaseEntity, Department, Document} from './internals';
 import {Entity, ManyToOne, OneToMany} from 'typeorm';
+import {BaseEntity, Department, Document} from './internals';
 
 
 @Entity()
-export class Lecturer extends BaseEntity{
+export class Lecturer extends BaseEntity {
 
   @ManyToOne(type => Department, department => department.lecturers)
   department: Department;
@@ -11,7 +11,7 @@ export class Lecturer extends BaseEntity{
   @OneToMany(type => Document, document => document.lecturer)
   documents: Document[];
 
-  constructor(name: string, title: string, department: Department){
+  constructor(name: string, title: string, department: Department) {
     super(name, title);
     this.department = department;
   }

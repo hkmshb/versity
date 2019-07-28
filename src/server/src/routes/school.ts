@@ -3,8 +3,8 @@ import { SchoolController } from '../controllers';
 
 
 class SchoolRoutes {
+  router: Router = Router();
   private controller = new SchoolController();
-  public router: Router = Router();
 
   constructor() {
     this.config();

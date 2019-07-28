@@ -1,12 +1,12 @@
-import { Router, Request, Response } from "express";
-import schoolRoutes from "./school";
+import { Request, Response, Router } from 'express';
+import schoolRoutes from './school';
 
 
 /**
  * Aggregates all the API endpoints behind a common sub path.
  */
 export default class ApiRoutes {
-  public router: Router = Router();
+  router: Router = Router();
 
   constructor(app) {
     this.router.get('/', this.listEndpoints);
@@ -16,7 +16,7 @@ export default class ApiRoutes {
   private listEndpoints(req: Request, res: Response): void {
     res.status(200)
       .send({
-        "message": "Implementation is pending..."
-      })
+        message: 'Implementation is pending...'
+      });
   }
 }

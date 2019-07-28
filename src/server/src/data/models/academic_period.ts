@@ -1,33 +1,33 @@
-import {BaseEntity, School, Document} from './internals';
-import {Entity, Column, OneToMany, ManyToOne} from 'typeorm';
+import {Column, Entity, ManyToOne, OneToMany} from 'typeorm';
+import {BaseEntity, Document, School} from './internals';
 
 
 @Entity()
-export class AcademicPeriod extends BaseEntity{
+export class AcademicPeriod extends BaseEntity {
 
-    @Column()
-    date_begin: Date;
+  @Column()
+  dateBegin: Date;
 
-    @Column()
-    date_end: Date;
+  @Column()
+  dateEnd: Date;
 
-    @ManyToOne(type => AcademicPeriod, period => period.children)
-    parent: AcademicPeriod;
+  @ManyToOne(type => AcademicPeriod, period => period.children)
+  parent: AcademicPeriod;
 
-    @OneToMany(type=> AcademicPeriod, period => period.parent)
-    children: AcademicPeriod[];
+  @OneToMany(type => AcademicPeriod, period => period.parent)
+  children: AcademicPeriod[];
 
-    @OneToMany(type => Document, document => document.academicPeriod)
-    documents: Document[];
+  @OneToMany(type => Document, document => document.academicPeriod)
+  documents: Document[];
 
-    @ManyToOne(type => School, school => school.academicPeriods)
-    school: School;
+  @ManyToOne(type => School, school => school.academicPeriods)
+  school: School;
 
-    constructor(name: string, title: string, date_begin: Date, date_end: Date,
-      school: School){
-        super(name, title);
-        this.date_begin = date_begin;
-        this.date_end = date_end;
-        this.school = school;
-      }
+  constructor(name: string, title: string, dateBegin: Date, dateEnd: Date,
+              school: School) {
+    super(name, title);
+    this.dateBegin = dateBegin;
+    this.dateEnd = dateEnd;
+    this.school = school;
+  }
 }
