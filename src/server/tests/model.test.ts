@@ -1,16 +1,16 @@
-import {
-  School,
-  Department,
-  createDbConnection,
-  Programme,
-  Course,
-  Lecturer,
-  AcademicPeriod,
-  Document
-} from '../src/data/models';
-import {getConnection, Connection, Repository} from 'typeorm';
 import * as chai from 'chai';
 import 'mocha';
+import {Connection, getConnection, Repository} from 'typeorm';
+import {
+  AcademicPeriod,
+  Course,
+  createDbConnection,
+  Department,
+  Document,
+  Lecturer,
+  Programme,
+  School
+} from '../src/data/models';
 
 
 describe('Models', () => {
@@ -26,7 +26,7 @@ describe('Models', () => {
 
   before(async () => {
     try {
-      connection = await createDbConnection("versity_test.sqlite");
+      connection = await createDbConnection('.test.sqlite');
       schoolRepository = connection.getRepository(School);
       departmentRepository = connection.getRepository(Department);
       programmeRepository = connection.getRepository(Programme);
@@ -34,41 +34,44 @@ describe('Models', () => {
       lecturerRepository = connection.getRepository(Lecturer);
       periodRepository = connection.getRepository(AcademicPeriod);
       documentRepository = connection.getRepository(Document);
-    }
-    catch(e) {
+    } catch (e) {
       console.error(`Initialize versity db failed with `, e);
       throw e;
     }
-  })
+  });
 
   describe('#CreateSchool', () => {
+    it('should add a school to the database', async () => {
+      const school = new School('School Name', 'Generated School', 'School street',
+                                'School state', 'School town');
 
-    it('should add a school to the database', async function(){
-      let school = new School("School Name", "Generated School","School street",
-      "School state", "School town");
-      let savedSchool = await schoolRepository.save(school);
-      let fetchedSchool = await schoolRepository.findOne(savedSchool.id);
+      const savedSchool = await schoolRepository.save(school);
+      const fetchedSchool = await schoolRepository.findOne(savedSchool.id);
       chai.assert.exists(fetchedSchool);
       chai.assert.equal(fetchedSchool.id, savedSchool.id);
-      chai.assert.exists(savedSchool.date_created);
-      chai.assert.exists(savedSchool.date_updated);
+      chai.assert.exists(savedSchool.dateCreated);
+      chai.assert.exists(savedSchool.dateUpdated);
     });
 
-    it('should add school with two children', async function() {
-      let parent = new School('sname','title', 'str', 'sstate', 'stwon');
-      let child_one = new School('cname', 'ctitle', 'cstr', 'cstate', 'ctown');
-      child_one.parent = parent;
-      let child_two = new School('ctname', 'ctitle', 'ctstr', 'ctstate', 'cttown');
-      child_two.parent = parent;
+    it('should add school with two children', async () => {
+      let parent = new School('sname', 'title', 'str', 'sstate', 'stwon');
+      let childOne = new School('cname', 'ctitle', 'cstr', 'cstate', 'ctown');
+      childOne.parent = parent;
+
+      let childTwo = new School('ctname', 'ctitle', 'ctstr', 'ctstate', 'cttown');
+      childTwo.parent = parent;
+
       await schoolRepository.save(parent);
-      await schoolRepository.save(child_one);
-      await schoolRepository.save(child_two);
-      parent = await schoolRepository.findOne(parent.id, {relations: ['children']})
-      child_one = await schoolRepository.findOne(child_one.id, {relations: ['parent']})
-      child_two = await schoolRepository.findOne(child_two.id, {relations: ['parent']})
+      await schoolRepository.save(childOne);
+      await schoolRepository.save(childTwo);
+
+      parent = await schoolRepository.findOne(parent.id, {relations: ['children']});
+      childOne = await schoolRepository.findOne(childOne.id, {relations: ['parent']});
+      childTwo = await schoolRepository.findOne(childTwo.id, {relations: ['parent']});
+
       chai.assert(parent.children.length === 2);
-      chai.assert(parent.id === child_one.parent.id);
-      chai.assert(child_one.parent.id === child_two.parent.id);
+      chai.assert(parent.id === childOne.parent.id);
+      chai.assert(childOne.parent.id === childTwo.parent.id);
     });
   });
 
@@ -76,15 +79,18 @@ describe('Models', () => {
     it('should add a department with a parent faculty in the db', async () => {
       let faculty = new School('Faculty', 'fac', 'fstr', 'fstt', 'ftown');
       let department = new Department('Department', 'dept', faculty);
+
       await schoolRepository.save(faculty);
       await departmentRepository.save(department);
+
       faculty = await schoolRepository.findOne(faculty.id, {relations: ['departments']});
       department = await departmentRepository.findOne(department.id, {relations: ['faculty']});
+
       chai.assert.isNumber(faculty.id);
       chai.assert.isNumber(department.id);
       chai.assert(faculty.departments.length === 1);
       chai.assert(department.faculty.id === faculty.id);
-    })
+    });
   });
 
   describe('#CreateProgramme', () => {
@@ -92,12 +98,15 @@ describe('Models', () => {
       let faculty = new School('Faculty', 'fac', 'fstr', 'fstt', 'ftown');
       let department = new Department('Department', 'dept', faculty);
       let programme = new Programme('programme', 'prg', 5, department);
+
       await schoolRepository.save(faculty);
       await departmentRepository.save(department);
       await programmeRepository.save(programme);
+
       faculty = await schoolRepository.findOne(faculty.id, {relations: ['departments']});
       department = await departmentRepository.findOne(department.id, {relations: ['faculty', 'programmes']});
-      programme = await programmeRepository.findOne(programme.id, {relations: ['department']})
+      programme = await programmeRepository.findOne(programme.id, {relations: ['department']});
+
       chai.assert.isNumber(faculty.id);
       chai.assert.isNumber(department.id);
       chai.assert.isNumber(programme.id);
@@ -105,7 +114,7 @@ describe('Models', () => {
       chai.assert(department.faculty.id === faculty.id);
       chai.assert(department.programmes.length === 1);
       chai.assert(programme.department.id === department.id);
-    })
+    });
   });
 
   describe('#CreateLecturer', () => {
@@ -113,12 +122,15 @@ describe('Models', () => {
       let faculty = new School('Faculty', 'fac', 'fstr', 'fstt', 'ftown');
       let department = new Department('Department', 'dept', faculty);
       let lecturer = new Lecturer('Mr. Adamu', 'adm', department);
+
       await schoolRepository.save(faculty);
       await departmentRepository.save(department);
       await lecturerRepository.save(lecturer);
+
       faculty = await schoolRepository.findOne(faculty.id, {relations: ['departments']});
       department = await departmentRepository.findOne(department.id, {relations: ['faculty', 'lecturers']});
-      lecturer = await lecturerRepository.findOne(lecturer.id, {relations: ['department']})
+      lecturer = await lecturerRepository.findOne(lecturer.id, {relations: ['department']});
+
       chai.assert.isNumber(faculty.id);
       chai.assert.isNumber(department.id);
       chai.assert.isNumber(lecturer.id);
@@ -126,7 +138,7 @@ describe('Models', () => {
       chai.assert(department.faculty.id === faculty.id);
       chai.assert(department.lecturers.length === 1);
       chai.assert(lecturer.department.id === department.id);
-    })
+    });
   });
 
   describe('#CreateCourse', () => {
@@ -135,14 +147,17 @@ describe('Models', () => {
       let department = new Department('Department', 'dept', faculty);
       let programme = new Programme('programme', 'prg', 5, department);
       let course = new Course('course name', 'crs', 'mee203', 3, 300, programme);
+
       await schoolRepository.save(faculty);
       await departmentRepository.save(department);
       await programmeRepository.save(programme);
       await courseRepository.save(course);
+
       faculty = await schoolRepository.findOne(faculty.id, {relations: ['departments']});
       department = await departmentRepository.findOne(department.id, {relations: ['faculty', 'programmes']});
-      programme = await programmeRepository.findOne(programme.id, {relations: ['department', 'courses']})
+      programme = await programmeRepository.findOne(programme.id, {relations: ['department', 'courses']});
       course = await courseRepository.findOne(course.id, {relations: ['programme']});
+
       chai.assert.isNumber(faculty.id);
       chai.assert.isNumber(department.id);
       chai.assert.isNumber(programme.id);
@@ -153,48 +168,52 @@ describe('Models', () => {
       chai.assert(programme.department.id === department.id);
       chai.assert(programme.courses.length === 1);
       chai.assert(course.programme.id === programme.id);
-    })
+    });
   });
 
   describe('#CreateAcademicPeriod', () => {
     it('should add an academic period with two other academic periods as children', async () => {
       let faculty = new School('Faculty', 'fac', 'fstr', 'fstt', 'ftown');
-      let session = new AcademicPeriod('session', 'ssn', new Date(), new Date(),faculty);
-      let semester_one = new AcademicPeriod('first semester', 'smst1', new Date(), new Date(),faculty);
-      semester_one.parent = session;
-      let semester_two = new AcademicPeriod('second semester', 'smst2', new Date(), new Date(),faculty);
-      semester_two.parent = session;
+      let session = new AcademicPeriod('session', 'ssn', new Date(), new Date(), faculty);
+      let semesterOne = new AcademicPeriod('first semester', 'smst1', new Date(), new Date(), faculty);
+      let semesterTwo = new AcademicPeriod('second semester', 'smst2', new Date(), new Date(), faculty);
+      semesterOne.parent = session;
+      semesterTwo.parent = session;
+
       await schoolRepository.save(faculty);
       await periodRepository.save(session);
-      await periodRepository.save(semester_one);
-      await periodRepository.save(semester_two);
+      await periodRepository.save(semesterOne);
+      await periodRepository.save(semesterTwo);
+
       faculty = await schoolRepository.findOne(faculty.id, {relations: ['academicPeriods']});
       session = await periodRepository.findOne(session.id, {relations: ['school', 'parent', 'children']});
-      semester_one = await periodRepository.findOne(semester_one.id, {relations: ['school', 'parent', 'children']});
-      semester_two = await periodRepository.findOne(semester_two.id, {relations: ['school', 'parent', 'children']});
+      semesterOne = await periodRepository.findOne(semesterOne.id, {relations: ['school', 'parent', 'children']});
+      semesterTwo = await periodRepository.findOne(semesterTwo.id, {relations: ['school', 'parent', 'children']});
+
       chai.assert.isNumber(faculty.id);
       chai.assert.isNumber(session.id);
-      chai.assert.isNumber(semester_one.id);
-      chai.assert.isNumber(semester_two.id);
+      chai.assert.isNumber(semesterOne.id);
+      chai.assert.isNumber(semesterTwo.id);
       chai.assert(faculty.academicPeriods.length === 3);
-      chai.assert(session.school.id == faculty.id);
-      chai.assert(semester_one.school.id == faculty.id);
-      chai.assert(semester_two.school.id == faculty.id);
+      chai.assert(session.school.id === faculty.id);
+      chai.assert(semesterOne.school.id === faculty.id);
+      chai.assert(semesterTwo.school.id === faculty.id);
       chai.assert(session.children.length === 2);
-      chai.assert(semester_one.parent.id === session.id);
-      chai.assert(semester_two.parent.id === session.id);
-    })
+      chai.assert(semesterOne.parent.id === session.id);
+      chai.assert(semesterTwo.parent.id === session.id);
+    });
   });
 
   describe('#CreateDocument', () => {
     it('should add a document to the database', async () => {
-      let faculty = new School('Faculty', 'fac', 'fstr', 'fstt', 'ftown');
-      let session = new AcademicPeriod('session', 'ssn', new Date(), new Date(),faculty);
-      let department = new Department('Department', 'dept', faculty);
-      let lecturer = new Lecturer('Mr. Adamu', 'adm', department);
-      let programme = new Programme('programme', 'prg', 5, department);
-      let course = new Course('course name', 'crs', 'mee203', 3, 300, programme);
+      const faculty = new School('Faculty', 'fac', 'fstr', 'fstt', 'ftown');
+      const session = new AcademicPeriod('session', 'ssn', new Date(), new Date(), faculty);
+      const department = new Department('Department', 'dept', faculty);
+      const lecturer = new Lecturer('Mr. Adamu', 'adm', department);
+      const programme = new Programme('programme', 'prg', 5, department);
+      const course = new Course('course name', 'crs', 'mee203', 3, 300, programme);
       let document = new Document('document', 'doc', 'pdf', 4, course, lecturer, session);
+
       await schoolRepository.save(faculty);
       await periodRepository.save(session);
       await departmentRepository.save(department);
@@ -202,8 +221,9 @@ describe('Models', () => {
       await programmeRepository.save(programme);
       await courseRepository.save(course);
       await documentRepository.save(document);
+
       document = await documentRepository.findOne(document.id);
       chai.assert(document.id !== undefined);
-    })
+    });
   });
-})
+});

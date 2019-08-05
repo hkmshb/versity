@@ -1,5 +1,5 @@
-import {BaseEntity, Department, Course} from './internals';
-import {Entity, Column, ManyToOne, OneToMany} from 'typeorm';
+import {Column, Entity, ManyToOne, OneToMany} from 'typeorm';
+import {BaseEntity, Course, Department} from './internals';
 
 
 @Entity()
@@ -9,7 +9,7 @@ export class Programme extends BaseEntity {
   duration: number;
 
   @ManyToOne(type => Department, department => department.programmes)
-  department: Department
+  department: Department;
 
   @OneToMany(type => Course, course => course.programme)
   courses: Course[];

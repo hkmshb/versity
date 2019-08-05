@@ -1,5 +1,5 @@
-import {BaseEntity, Department, Document} from './internals';
 import {Entity, ManyToOne, OneToMany} from 'typeorm';
+import {BaseEntity, Department, Document} from './internals';
 
 
 @Entity()

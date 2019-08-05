@@ -1,4 +1,4 @@
-import {PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn} from 'typeorm';
+import {Column, CreateDateColumn, PrimaryGeneratedColumn, UpdateDateColumn} from 'typeorm';
 
 export abstract class BaseEntity {
 
@@ -12,14 +12,13 @@ export abstract class BaseEntity {
   title: string;
 
   @CreateDateColumn()
-  date_created: Date;
+  dateCreated: Date;
 
   @UpdateDateColumn()
-  date_updated: Date;
+  dateUpdated: Date;
 
   constructor(name: string, title: string) {
     this.name = name;
     this.title = title;
   }
-
 }
