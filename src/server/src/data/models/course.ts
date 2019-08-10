@@ -1,11 +1,13 @@
-import {Column, Entity, ManyToOne, OneToMany} from 'typeorm';
-import {BaseEntity, Document, Programme} from './internals';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import Document from './document';
+import NamedEntity from './entity';
+import Programme from './programme';
 
 
 @Entity()
-export class Course extends BaseEntity {
+export default class Course extends NamedEntity {
 
-  @Column()
+  @Column({ length: 15, unique: true })
   code: string;
 
   @Column()
@@ -15,17 +17,10 @@ export class Course extends BaseEntity {
   level: number;
 
   @ManyToOne(type => Programme, programme => programme.courses)
+  @JoinColumn({ name: 'programme_id' })
   programme: Programme;
 
   @OneToMany(type => Document, document => document.course)
   documents: Document[];
 
-  constructor(name: string, title: string, code: string, unit: number,
-              level: number, programme: Programme) {
-    super(name, title);
-    this.code = code;
-    this.unit = unit;
-    this.level = level;
-    this.programme = programme;
-  }
 }

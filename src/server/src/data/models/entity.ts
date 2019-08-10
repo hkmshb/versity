@@ -1,24 +1,26 @@
-import {Column, CreateDateColumn, PrimaryGeneratedColumn, UpdateDateColumn} from 'typeorm';
+import { Column, CreateDateColumn, Generated, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 export abstract class BaseEntity {
 
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  name: string;
+  @Column({ type: 'varchar', length: 32, unique: true })
+  @Generated('uuid')
+  uuid: string;
 
-  @Column()
-  title: string;
-
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'date_created', nullable: false })
   dateCreated: Date;
 
-  @UpdateDateColumn()
-  dateUpdated: Date;
+  @UpdateDateColumn({ name: 'last_updated', nullable: true })
+  lastUpdated: Date;
 
-  constructor(name: string, title: string) {
-    this.name = name;
-    this.title = title;
-  }
+}
+
+
+export default abstract class NamedEntity extends BaseEntity {
+
+  @Column({ type: 'varchar', unique: true, nullable: false })
+  name: string;
+
 }

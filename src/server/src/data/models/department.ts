@@ -1,12 +1,16 @@
-import {Column, Entity, ManyToOne, OneToMany} from 'typeorm';
-import {BaseEntity, Lecturer, Programme, School} from './internals';
+import { Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import NamedEntity from './entity';
+import Lecturer from './lecturer';
+import Programme from './programme';
+import School from './school';
 
 
 @Entity()
-export class Department extends BaseEntity {
+export default class Department extends NamedEntity {
 
   @ManyToOne(type => School, school => school.departments)
-  faculty: School;
+  @JoinColumn({ name: 'school_id' })
+  school: School;
 
   @OneToMany(type => Programme, programme => programme.department)
   programmes: Programme[];
@@ -14,8 +18,4 @@ export class Department extends BaseEntity {
   @OneToMany(type => Lecturer, lecturer => lecturer.department)
   lecturers: Lecturer[];
 
-  constructor(name: string, title: string, faculty: School) {
-    super(name, title);
-    this.faculty = faculty;
-  }
 }

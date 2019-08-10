@@ -1,23 +1,21 @@
-import 'reflect-metadata';
-import {Connection, createConnection} from 'typeorm';
-import {AcademicPeriod, Course, Department, Document, Lecturer, Programme, School} from './internals';
-export {School, Department, Programme, Course, Lecturer, AcademicPeriod, Document} from './internals';
+import AcademicPeriod from './academic-period';
+import Course from './course';
+import Department from './department';
+import Document from './document';
+import NamedEntity, { BaseEntity } from './entity';
+import Lecturer from './lecturer';
+import Programme from './programme';
+import School from './school';
 
 
-export async function createDbConnection(connectionUrl: string): Promise<Connection> {
-  return await createConnection({
-    type: 'sqlite',
-    database: connectionUrl,
-    synchronize: true,
-    logging: false,
-    entities: [
-      School,
-      Department,
-      Programme,
-      Course,
-      Lecturer,
-      AcademicPeriod,
-      Document
-    ]
-  });
-}
+export {
+  AcademicPeriod,
+  BaseEntity,
+  Course,
+  Department,
+  Document,
+  Lecturer,
+  NamedEntity,
+  Programme,
+  School,
+};
