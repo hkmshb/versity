@@ -1,0 +1,47 @@
+[
+  {
+    "name": "Marula University",
+    "code": "marula-university",
+    "nickname": "MU"
+  },
+  {
+    "name": "Baobab School of Medicine",
+    "code": "baobab-school-of-medicine",
+    "nickname": "BSM",
+    "addrStreet": "No. 88 Baobab Avenue",
+    "addrState": "Baobab, Bao-Country",
+    "addrTown": "Bao"
+  },
+  {
+    "name": "Kigelia University of Technology",
+    "code": "kigelia-university-of-technology",
+    "nickname": "KUT",
+    "addrStreet": "No 7 Kigelia Avenue",
+    "addrState": "Kigelia, Kig-Country",
+    "addrTown": "Kig",
+    "children": [
+      {
+        "name": "School of Engineering",
+        "code": "school-of-engineering",
+        "nickname": "KUT-SOENG"
+      },
+      {
+        "name": "School of Agriculture",
+        "code": "school-of-agriculture",
+        "nickname": "KUT-SOAGRIC"
+      }
+    ]
+  },
+  {
+    "name": "Imberbe University",
+    "code": "imberbe-university",
+    "nickname": "IU",
+    "children": [
+      {
+        "name": "School of Engineering",
+        "code": "school-of-engineering",
+        "nickname": "IU-SOENG"
+      }
+    ]
+  }
+]

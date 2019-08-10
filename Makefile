@@ -23,16 +23,25 @@ server:
 	source .env && \
 	yarn ${SERVER_DIR} start
 
-lint:
+lint-client:
 	set -e; \
-	yarn ${CLIENT_DIR} lint; \
+	yarn ${CLIENT_DIR} lint
+
+lint-server:
+	set -e; \
 	yarn ${SERVER_DIR} lint;
 
-test:
+lint: lint-client lint-server
+
+test-client:
 	set -e; \
-	rm -rf src/server/*.sqlite; \
-	yarn ${CLIENT_DIR} test; \
-	yarn ${SERVER_DIR} test;
+	yarn ${CLIENT_DIR} test
+
+test-server:
+	set -e; \
+	yarn ${SERVER_DIR} test
+
+test: test-client test-server
 
 pre-commit: lint test
 
