@@ -1,5 +1,12 @@
 import * as fs from 'fs';
-import { Connection, createConnection, DeepPartial, getConnection, ObjectType } from 'typeorm';
+import {
+  Connection,
+  createConnection,
+  DeepPartial,
+  EntityMetadata,
+  getConnection,
+  ObjectType
+} from 'typeorm';
 import { models } from '../src/data';
 
 
@@ -23,13 +30,14 @@ export const getTestDbConnection = async (name: string = 'test-db'): Promise<Con
  * Loads a collection of predefined, valid test data for entities defined in the
  * system with the relationship between these entities modelled.
  */
-export const loadDbFixtures = async (loader: FixtureLoader = null) => {
+export const loadValidEntityFixtures = async (loader: FixtureLoader = null) => {
   const conn = await getTestDbConnection();
   loader = loader || new FixtureLoader(conn);
 
   const promises = [];
-  conn.entityMetadatas.forEach(entity => {
-    const fixtureFile = `${__dirname}/fixtures/${entity.name.toLowerCase()}.json`;
+  loader.loadOrder.forEach(entity => {
+    const fname = entity.tableName.replace('_', '-').toLowerCase();
+    const fixtureFile = `${__dirname}/fixtures/valid-entity-docs/${fname}.json`;
     if (!fs.existsSync(fixtureFile)) return;
 
     const items = JSON.parse(fs.readFileSync(fixtureFile, 'utf8'));
@@ -53,9 +61,22 @@ export const loadDbFixtures = async (loader: FixtureLoader = null) => {
 
 export class FixtureLoader {
   conn: Connection;
+  loadOrder: EntityMetadata[];
 
   constructor(conn: Connection) {
     this.conn = conn;
+    this.loadOrder = [];
+
+    const loadOrder = [
+      models.School.name,
+      models.AcademicPeriod.name,
+    ];
+
+    const entities = [...conn.entityMetadatas];
+    loadOrder.forEach(name => {
+      const item = entities.filter(e => e.name === name);
+      if (item) this.loadOrder.push(item[0]);
+    });
   }
 
   clear(): void {
@@ -68,7 +89,7 @@ export class FixtureLoader {
   async load<T extends any>(entity: ObjectType<T>, args: DeepPartial<T>): Promise<T> {
     const repo = this.conn.getRepository(entity.name);
     const instance = repo.create(args) as T;
-    return repo.save(instance);
+    return await repo.save(instance);
   }
 
   async loadSchool(values): Promise<models.School> {
@@ -79,7 +100,35 @@ export class FixtureLoader {
         await this.loadSchool({ ...child, parent: savedSchool});
       }
     }
-
     return savedSchool;
+  }
+
+  async loadAcademicPeriod(values): Promise<models.AcademicPeriod> {
+    let schoolInstance = null;
+    const { children, school, ...args } = values;
+    if (school) { // && !schoolInstance) {
+      if (typeof school === 'string' && school.startsWith('$ref:')) {
+        const repo = this.conn.getRepository(models.School);
+        const [ field, value ] = school.substring(5).trim().split('=');
+
+        // HACK:
+        // findOne had to be called twice in order to retrieve existing record :shrug:
+        schoolInstance = await repo.findOne({[field]: value});
+        schoolInstance = await repo.findOne({[field]: value});
+      } else {
+        schoolInstance = await this.loadSchool(school);
+      }
+
+      if (!schoolInstance) throw new Error(`School not found: ${school}`);
+    }
+
+    const savedPeriod = await this.load(models.AcademicPeriod, {...args, school: schoolInstance});
+    if (children) {
+      for (const child of children) {
+        await this.loadAcademicPeriod({ ...child, parent: savedPeriod });
+      }
+    }
+    // console.log(JSON.stringify(savedPeriod, null, 2));
+    return savedPeriod;
   }
 }

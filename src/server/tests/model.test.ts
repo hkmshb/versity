@@ -2,7 +2,7 @@
 import * as chai from 'chai';
 import * as mocha from 'mocha';
 import { models } from '../src/data';
-import { FixtureLoader, getTestDbConnection, loadDbFixtures } from './test-utils';
+import { FixtureLoader, getTestDbConnection, loadValidEntityFixtures } from './test-utils';
 
 
 const expect = chai.expect;
@@ -15,18 +15,18 @@ describe('# misc data tests', async () => {
   });
 
   it('should load entity fixtures to verify definitions and relationships', async () => {
-    loadDbFixtures(loader)
+    loadValidEntityFixtures(loader)
       .then(result => expect(result).to.be.true);
   });
 });
 
 
-describe('# school entity tests', async () => {
+describe('# entity tests', async () => {
   let loader: FixtureLoader;
 
   before(async () => {
     loader = new FixtureLoader(await getTestDbConnection('test-db2'));
-    await loadDbFixtures(loader);
+    return await loadValidEntityFixtures(loader);
   });
 
   it('should verify school count matches loaded fixture entries', async () => {
@@ -35,6 +35,15 @@ describe('# school entity tests', async () => {
         .getRepository('School')
         .count()
         .then(value => expect(value).to.equal(7))
+    );
+  });
+
+  it('should verify academic period count matches loaded fixture entries', async () => {
+    return (
+      loader.conn
+        .getRepository('AcademicPeriod')
+        .count()
+        .then(value => expect(value).to.equal(5))
     );
   });
 
@@ -60,7 +69,33 @@ describe('# school entity tests', async () => {
           expect(school.parent).to.be.null;
           expect(school.children.length).to.equal(2);
         })
-    )
+    );
+  });
+
+  it('should verify school to academic period relationship', async () => {
+    return(
+      loader.conn
+        .getRepository(models.School)
+        .findOne({nickname: 'BSM'}, {relations: ['academicPeriods']})
+        .then(school => {
+          expect(school).to.not.be.undefined;
+          expect(school.academicPeriods.length).to.equal(1);
+        })
+    );
+  });
+
+  it('should not have orphaned academic periods', async () => {
+    return (
+      loader.conn
+        .getRepository(models.AcademicPeriod)
+        .find({relations: ['school']})
+        .then(periods => {
+          expect(periods.length).to.equal(5);
+          periods.filter(p => p.parent ===  null).forEach(p => {
+            expect(p.school).to.not.be.null;
+          });
+        })
+    );
   });
 });
 

@@ -1,11 +1,16 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import { Check, Column, Entity, JoinColumn, ManyToOne, OneToMany, Unique } from 'typeorm';
 import Document from './document';
-import NamedEntity from './entity';
+import { BaseEntity } from './entity';
 import School from './school';
 
 
 @Entity()
-export default class AcademicPeriod extends NamedEntity {
+@Check(`"school_id" IS NOT NULL OR "school_id" != 0`)
+@Unique(['school', 'parent', 'name'])
+export default class AcademicPeriod extends BaseEntity {
+
+  @Column({ type: 'varchar', nullable: false })
+  name: string;
 
   @Column({ name: 'date_begin', nullable: true })
   dateBegin: Date;

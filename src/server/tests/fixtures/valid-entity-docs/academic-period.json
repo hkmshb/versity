@@ -1,0 +1,30 @@
+[
+  {
+    "name": "2016/2017",
+    "school": "$ref:nickname=KUT"
+  },
+  {
+    "name": "2017/2018",
+    "dateBegin": "2017-10-01",
+    "dateEnd": "2018-07-31",
+    "school": "$ref:nickname=KUT"
+  },
+  {
+    "name": "2018/2019",
+    "dateBegin": "2018-10-01",
+    "dateEnd": "2019-07-31",
+    "school": "$ref:code=baobab-school-of-medicine",
+    "children": [
+      {
+        "name": "1st Semester",
+        "dateBegin": "2018-10-01",
+        "dateEnd": "2019-02-15"
+      },
+      {
+        "name": "2nd Semester",
+        "dateBegin": "2019-04-04",
+        "dateEnd": "2019-07-31"
+      }
+    ]
+  }
+]
