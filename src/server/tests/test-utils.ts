@@ -1,13 +1,12 @@
 import * as fs from 'fs';
 import {
-  Connection,
   createConnection,
   DeepPartial,
   EntityMetadata,
   getConnection,
   ObjectType
 } from 'typeorm';
-import { models } from '../src/data';
+import { Connection, models } from '../src/data';
 
 
 export const getTestDbConnection = async (name: string = 'test-db'): Promise<Connection> => {
@@ -70,6 +69,8 @@ export class FixtureLoader {
     const loadOrder = [
       models.School.name,
       models.AcademicPeriod.name,
+      models.Department.name,
+      models.Programme.name,
     ];
 
     const entities = [...conn.entityMetadatas];
@@ -87,9 +88,14 @@ export class FixtureLoader {
   }
 
   async load<T extends any>(entity: ObjectType<T>, args: DeepPartial<T>): Promise<T> {
-    const repo = this.conn.getRepository(entity.name);
-    const instance = repo.create(args) as T;
-    return await repo.save(instance);
+    try {
+      const customRepository = this.conn.findRepository(entity);
+      return await customRepository.createAndSave(args);
+    } catch (err) {
+      const repository = this.conn.getRepository(entity);
+      const instance = repository.create(args) as T;
+      return await repository.save(instance);
+    }
   }
 
   async loadSchool(values): Promise<models.School> {
@@ -104,24 +110,8 @@ export class FixtureLoader {
   }
 
   async loadAcademicPeriod(values): Promise<models.AcademicPeriod> {
-    let schoolInstance = null;
     const { children, school, ...args } = values;
-    if (school) { // && !schoolInstance) {
-      if (typeof school === 'string' && school.startsWith('$ref:')) {
-        const repo = this.conn.getRepository(models.School);
-        const [ field, value ] = school.substring(5).trim().split('=');
-
-        // HACK:
-        // findOne had to be called twice in order to retrieve existing record :shrug:
-        schoolInstance = await repo.findOne({[field]: value});
-        schoolInstance = await repo.findOne({[field]: value});
-      } else {
-        schoolInstance = await this.loadSchool(school);
-      }
-
-      if (!schoolInstance) throw new Error(`School not found: ${school}`);
-    }
-
+    const schoolInstance = await this.findSchool(school);
     const savedPeriod = await this.load(models.AcademicPeriod, {...args, school: schoolInstance});
     if (children) {
       for (const child of children) {
@@ -130,5 +120,72 @@ export class FixtureLoader {
     }
     // console.log(JSON.stringify(savedPeriod, null, 2));
     return savedPeriod;
+  }
+
+  async loadDepartment(values): Promise<models.Department> {
+    const { programmes, school, ...args } = values;
+    const schoolInstance = await this.findSchool(school);
+    const savedDept = await this.load(models.Department, { ...args, school: schoolInstance });
+
+    if (programmes) {
+      programmes.forEach(prog => (
+        this.loadProgramme({...prog, department: savedDept})
+      ));
+    }
+    return savedDept;
+  }
+
+  async loadProgramme(values): Promise<models.Programme> {
+    const { courses, dept, ...args } = values;
+    const deptInstance = await this.findDept(dept);
+    const savedProgramme = await this.load(models.Programme, { ...args, department: deptInstance });
+
+    if (courses) {
+      courses.array.forEach(course => (
+        this.loadCourse({...course, programme: savedProgramme})
+      ));
+    }
+    return savedProgramme;
+  }
+
+  async loadCourse(values): Promise<models.Course> {
+    return null;
+  }
+
+  async findSchool(schoolRef): Promise<models.School> {
+    let school: models.School = null;
+    if (schoolRef) { // && !school) {
+      if (typeof schoolRef === 'string' && schoolRef.startsWith('$ref:')) {
+        const repo = this.conn.getRepository(models.School);
+        const [ field, value ] = schoolRef.substring(5).trim().split('=');
+
+        // HACK:
+        // findOne had to be called twice in order to retrieve existing record :shrug:
+        school = await repo.findOne({[field]: value});
+        school = await repo.findOne({[field]: value});
+      } else {
+        school = await this.loadSchool(schoolRef);
+      }
+
+      if (!school) throw new Error(`School not found: ${schoolRef}`);
+    }
+    return school;
+  }
+
+  async findDept(deptRef): Promise<models.Department> {
+    let dept: models.Department = null;
+    if (deptRef) {
+      if (typeof deptRef === 'string' && deptRef.startsWith('$ref:')) {
+        const repo = this.conn.getRepository(models.Department);
+        const [ field, value ] = deptRef.substring(5).trim().split('=');
+
+        dept = await repo.findOne({[field]: value});
+      } else {
+        dept = await this.loadDepartment(deptRef);
+      }
+
+      if (!dept) throw new Error(`Department not found: ${deptRef}`);
+    }
+    return dept;
   }
 }

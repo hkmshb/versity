@@ -10,7 +10,7 @@ import { URL } from 'url';
  */
 const getEnv = (name: string): string => {
   const value = process.env[name];
-  if (!value) {
+  if (!value && process.env.NODE_ENV !== 'test') {
     throw new Error(`Required env var missing: '${name}'`);
   }
   return value;

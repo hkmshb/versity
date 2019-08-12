@@ -1,0 +1,31 @@
+[
+  {
+    "name": "Mass Communication",
+    "school": "$ref:nickname=KUT"
+  },
+  {
+    "name": "Mechanical Engineering",
+    "school": "$ref:nickname=KUT"
+  },
+  {
+    "name": "Electrical Engineering",
+    "school": "$ref:nickname=BSM",
+    "programmes": [
+      {
+        "name": "BEng. Electrical",
+        "duration": 5,
+        "fullname": "Bachelor of Engineering, Electrical"
+      },
+      {
+        "name": "MEng. Electrical",
+        "duration": 1,
+        "fullname": "Master of Engineering, Electrical"
+      },
+      {
+        "name": "PG Electrical",
+        "duration": 2,
+        "fullname": "Post Graduate in Electrical Engineering"
+      }
+    ]
+  }
+]

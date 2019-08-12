@@ -29,21 +29,15 @@ describe('# entity tests', async () => {
     return await loadValidEntityFixtures(loader);
   });
 
+  // ======================================================================
+  // School Entity Tests
+  // ======================================================================
   it('should verify school count matches loaded fixture entries', async () => {
     return (
       loader.conn
         .getRepository('School')
         .count()
         .then(value => expect(value).to.equal(7))
-    );
-  });
-
-  it('should verify academic period count matches loaded fixture entries', async () => {
-    return (
-      loader.conn
-        .getRepository('AcademicPeriod')
-        .count()
-        .then(value => expect(value).to.equal(5))
     );
   });
 
@@ -84,7 +78,7 @@ describe('# entity tests', async () => {
     );
   });
 
-  it('should not have orphaned academic periods', async () => {
+  it('should not have orphaned academic periods for schools', async () => {
     return (
       loader.conn
         .getRepository(models.AcademicPeriod)
@@ -97,6 +91,43 @@ describe('# entity tests', async () => {
         })
     );
   });
+
+  // ======================================================================
+  // Academic Period Entity Tests
+  // ======================================================================
+  it('should verify academic period count matches loaded fixture entries', async () => {
+    return (
+      loader.conn
+        .getRepository('AcademicPeriod')
+        .count()
+        .then(value => expect(value).to.equal(5))
+    );
+  });
+
+  // ======================================================================
+  // Department Entity Tests
+  // ======================================================================
+  it('should verify department count matches loaded fixture entries', async () => {
+    return (
+      loader.conn
+        .getRepository('Department')
+        .count()
+        .then(value => expect(value).to.equal(3))
+    );
+  });
+
+  // ======================================================================
+  // Programme Entity Tests
+  // ======================================================================
+  it('should verify programme count matches loaded fixture entries', async () => {
+    return (
+      loader.conn
+        .getRepository('Programme')
+        .count()
+        .then(value => expect(value).to.equal(3))
+    );
+  });
+
 });
 
 
