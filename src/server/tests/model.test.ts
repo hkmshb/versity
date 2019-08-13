@@ -11,7 +11,7 @@ describe('# misc data tests', async () => {
   let loader: FixtureLoader;
 
   before(async () => {
-    loader = new FixtureLoader(await getTestDbConnection());
+    loader = new FixtureLoader(await getTestDbConnection('test-models#1'));
   });
 
   it('should load entity fixtures to verify definitions and relationships', async () => {
@@ -25,7 +25,7 @@ describe('# entity tests', async () => {
   let loader: FixtureLoader;
 
   before(async () => {
-    loader = new FixtureLoader(await getTestDbConnection('test-db2'));
+    loader = new FixtureLoader(await getTestDbConnection('test-models#2'));
     return await loadValidEntityFixtures(loader);
   });
 

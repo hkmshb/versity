@@ -89,8 +89,8 @@ export class FixtureLoader {
 
   async load<T extends any>(entity: ObjectType<T>, args: DeepPartial<T>): Promise<T> {
     try {
-      const customRepository = this.conn.findRepository(entity);
-      return await customRepository.createAndSave(args);
+      const service = this.conn.findEntityServiceFor(entity);
+      return await service.createAndSave(args);
     } catch (err) {
       const repository = this.conn.getRepository(entity);
       const instance = repository.create(args) as T;

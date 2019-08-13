@@ -12,16 +12,16 @@ describe('# model validation tests', async () => {
   let conn: Connection;
 
   before(async () => {
-    conn = await getTestDbConnection('test-db3');
+    conn = await getTestDbConnection('test-data1');
   });
 
-  it('should find the findRepository extension method on Connection', async () => {
-    expect(conn).to.have.property('findRepository');
-  });
+  it('should find the findEntityServiceFor extension method on Connection', () => (
+    expect(conn).to.have.property('findEntityServiceFor')
+  ));
 
-  it('should retrieve custom repository using findRepository on connection', async () => {
-    const repository = conn.findRepository(models.School);
-    expect(repository).to.not.be.undefined;
-    expect(repository).to.not.be.null;
+  it('should retrieve entity service using findEntityService on connection', () => {
+    const service = conn.findEntityServiceFor(models.School);
+    expect(service).to.not.be.undefined;
+    expect(service).to.not.be.null;
   });
 });
