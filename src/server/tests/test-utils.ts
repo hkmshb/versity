@@ -1,7 +1,6 @@
 import * as fs from 'fs';
 import {
   createConnection,
-  DeepPartial,
   EntityMetadata,
   getConnection,
   ObjectType
@@ -87,11 +86,12 @@ export class FixtureLoader {
     });
   }
 
-  async load<T extends any>(entity: ObjectType<T>, args: DeepPartial<T>): Promise<T> {
+  async load<T extends any>(entity: ObjectType<T>, args: Partial<T>): Promise<T> {
     try {
       const service = this.conn.findEntityServiceFor(entity);
       return await service.createAndSave(args);
     } catch (err) {
+      // console.log(`type: ${entity.name} error: ${JSON.stringify(err, null, 2)}`);
       const repository = this.conn.getRepository(entity);
       const instance = repository.create(args) as T;
       return await repository.save(instance);
@@ -103,7 +103,7 @@ export class FixtureLoader {
     const savedSchool = await this.load(models.School, args);
     if (children) {
       for (const child of children) {
-        await this.loadSchool({ ...child, parent: savedSchool});
+        await this.loadSchool({ ...child, parentId: savedSchool.id });
       }
     }
     return savedSchool;
@@ -161,8 +161,9 @@ export class FixtureLoader {
 
         // HACK:
         // findOne had to be called twice in order to retrieve existing record :shrug:
-        school = await repo.findOne({[field]: value});
-        school = await repo.findOne({[field]: value});
+        const condition = {[field]: value};
+        school = await repo.findOne(condition);
+        school = await repo.findOne(condition);
       } else {
         school = await this.loadSchool(schoolRef);
       }

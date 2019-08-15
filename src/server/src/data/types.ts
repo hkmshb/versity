@@ -1,15 +1,15 @@
 import { AbstractRepository, FindOneOptions, ObjectID, Repository } from 'typeorm';
 
 
-export abstract class EntityService<T> extends AbstractRepository<T> {
+export abstract class EntityService<T, U extends Partial<T>> extends AbstractRepository<T> {
   /**
    * Create and persist data for an entity.
    */
-  abstract createAndSave(values: Partial<T>): Promise<T>;
+  abstract createAndSave(values: U): Promise<T>;
   /**
    * Updates an existing entity.
    */
-  abstract updateAndSave(values: Partial<T>): Promise<T>;
+  abstract updateAndSave(values: U): Promise<T>;
   /**
    * Finds first entity that matches given id and otions
    */

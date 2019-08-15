@@ -7,15 +7,15 @@ import { EntityService } from './types';
 declare module 'typeorm' {
   // tslint:disable:interface-name
   interface Connection {
-    findEntityServiceFor<T>(entity: ObjectType<T>): EntityService<T>;
+    findEntityServiceFor<T>(entity: ObjectType<T>): EntityService<T, any>;
   }
 }
 
 // tslint:disable:only-arrow-functions
-Connection.prototype.findEntityServiceFor = function<T>(entity: ObjectType<T>): EntityService<T> {
+Connection.prototype.findEntityServiceFor = function<T>(entity: ObjectType<T>): EntityService<T, any> {
   // finder provides access to the connection instance, not possible otherwise see
   // https://stackoverflow.com/questions/4700880/this-in-function-inside-prototype-function
-  const finder = (): EntityService<T> => {
+  const finder = (): EntityService<T, any> => {
     const serviceName = `${entity.name}Service`;
     const serviceType = repos[serviceName];
     if (!serviceType) {

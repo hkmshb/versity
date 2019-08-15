@@ -39,6 +39,7 @@ test-client:
 
 test-server:
 	set -e; \
+	export VERSITY_API_URL='http://api.versity.local'; \
 	yarn ${SERVER_DIR} test
 
 test: test-client test-server

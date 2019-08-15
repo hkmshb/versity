@@ -15,8 +15,10 @@ describe('# misc data tests', async () => {
   });
 
   it('should load entity fixtures to verify definitions and relationships', async () => {
-    loadValidEntityFixtures(loader)
-      .then(result => expect(result).to.be.true);
+    return (
+      loadValidEntityFixtures(loader)
+        .then(result => expect(result).to.be.true)
+    );
   });
 });
 
