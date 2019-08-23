@@ -5,25 +5,26 @@ import { URL } from 'url';
 
 
 /**
- * Returns environment variable value for provided name if set otherwise throws error.
- * @param name Name of the environment variable value to retrieve.
+ *
  */
-const getEnv = (name: string): string => {
-  const value = process.env[name];
-  if (!value && process.env.NODE_ENV !== 'test') {
-    throw new Error(`Required env var missing: '${name}'`);
-  }
-  return value;
-};
+export const IS_TEST_ENV = ['test', 'debug'].includes(process.env.NODE_ENV);
+export const IS_PROD_ENV = ['live', 'prod', 'production'].includes(process.env.NODE_ENV);
 
 
 /**
- * CONSTANTS
+ * Returns environment variable value for provided name if set otherwise throws error.
+ * @param name Name of the environment variable value to retrieve.
  */
-export const API_RELPATH = 'api/v1';
-export const IS_PRODUCTION = process.env.NODE_ENV === 'production';
-export const VERSITY_URL: URL = new URL(getEnv('VERSITY_API_URL'));
+const getEnv = (name: string, defaultValue: string = null): string => {
+  const value = process.env[name];
+  if (!value && !defaultValue && !IS_TEST_ENV) {
+    throw new Error(`Required env var missing: '${name}'`);
+  }
+  return value || defaultValue;
+};
 
-export const LOG_LEVEL = process.env.LOG_LEVEL || (
-  IS_PRODUCTION ? 'info' : 'debug'
-);
+
+export const LOG_LEVEL = getEnv('LOG_LEVEL', (IS_PROD_ENV ? 'info' : 'debug'));
+
+export const API_BASEURL: URL = new URL(getEnv('VERSITY_API_BASEURL'));
+export const DATABASE_URL: URL = new URL(getEnv('VERSITY_DATABASE_URL'))

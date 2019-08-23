@@ -39,7 +39,8 @@ test-client:
 
 test-server:
 	set -e; \
-	export VERSITY_API_URL='http://api.versity.local'; \
+	export VERSITY_API_BASEURL='http://api.versity.local'; \
+	export VERSITY_DATABASE_URL='sqlite:///:memory:'; \
 	yarn ${SERVER_DIR} test
 
 test: test-client test-server
