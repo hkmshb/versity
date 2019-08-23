@@ -1,3 +1,4 @@
+import bodyParser from 'body-parser';
 import express, { Application } from 'express';
 import pinoLogger from 'express-pino-logger';
 import ApiRoutes from './routes';
@@ -17,10 +18,17 @@ class VersityServer {
   }
 
   private configureApp(): void {
-    this.app.use(pinoLogger({ logger }));
+    this.configureMiddlewares();
 
+    // configure routes
     const apiRoutes = new ApiRoutes(this.app);
     this.app.use(apiRoutes.router);
+  }
+
+  private configureMiddlewares(): void {
+    // configure loggers & content parsers
+    this.app.use(pinoLogger({ logger }));
+    this.app.use(bodyParser.json({limit: '50mb'}));
   }
 }
 

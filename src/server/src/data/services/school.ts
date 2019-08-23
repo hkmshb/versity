@@ -1,6 +1,5 @@
-import { EntityRepository, FindOneOptions, ObjectID, Repository } from 'typeorm';
+import { EntityRepository, FindOneOptions, Repository } from 'typeorm';
 import { ObjectSchema, ValidationError } from 'yup';
-import { logger } from '../../utils';
 import { School } from '../models';
 import { RequiredIdSchema, SchoolData, SchoolSchema } from '../schemas';
 import { EntityService } from '../types';

@@ -11,7 +11,12 @@ class SchoolRoutes {
   }
 
   private config() {
-    this.router.get('/', (req, res) => this.controller.index(req, res));
+    this.router.get('/', this.controller.listSchools);
+    this.router.get('/:ident', this.controller.getSchool);
+
+    this.router.post('/', this.controller.createSchool);
+    this.router.put('/:ident', this.controller.updateSchool);
+    this.router.patch('/:ident', this.controller.updateSchool);
     return this.router;
   }
 }
