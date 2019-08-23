@@ -13,7 +13,7 @@ export abstract class EntityService<T, U extends Partial<T>> extends AbstractRep
   /**
    * Finds first entity that matches given id and otions
    */
-  abstract findOne(ident?: string | number | Date | ObjectID, options?: FindOneOptions<T>): Promise<T>;
+  abstract findByIdent(ident?: string | number, options?: FindOneOptions<T>): Promise<T>;
   /**
    * Returns the ORM repository for an entity.
    */

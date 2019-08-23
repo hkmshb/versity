@@ -28,7 +28,7 @@ export default class SchoolService extends EntityService<School, SchoolData> {
       .findOne(schoolId, {relations: ['parent', 'children']});
 
     if (!school) {
-      throw new ValidationError(`No object found id: ${schoolId}`, values, 'id');
+      throw new ValidationError(`School not found for ${schoolId}`, values, 'id');
     }
 
     const data = await this.validate(SchoolSchema, values);
@@ -39,8 +39,17 @@ export default class SchoolService extends EntityService<School, SchoolData> {
   /**
    * Finds and returns a persisted School object from storage.
    */
-  findOne(ident?: string | number | Date | ObjectID, options?: FindOneOptions<School>): Promise<School> {
-    return null;
+  findByIdent(ident?: string | number, options?: FindOneOptions<School>): Promise<School> {
+    return this.getRepositoryFor(School)
+      .createQueryBuilder(School.name)
+      .where('id = :ident OR code = :ident OR uuid = :ident', {ident})
+      .getOne()
+      .then(school => {
+        if (!school) {
+          throw new Error(`School not found for '${ident}'`);
+        }
+        return school;
+      });
   }
 
   /**
