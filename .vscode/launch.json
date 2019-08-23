@@ -21,7 +21,8 @@
       "program": "${workspaceFolder}/src/server/node_modules/mocha/bin/_mocha",
       "args": ["-r", "ts-node/register", "${file}"],
       "cwd": "${workspaceFolder}/src/server",
-      "protocol": "inspector"
+      "protocol": "inspector",
+      "envFile": "${workspaceFolder}/.env.debugger"
     },
     {
       "type": "node",
@@ -30,7 +31,8 @@
       "program": "${workspaceFolder}/src/server/node_modules/mocha/bin/_mocha",
       "args": ["-r", "ts-node/register", "tests/**/*.test.ts"],
       "cwd": "${workspaceFolder}/src/server",
-      "protocol": "inspector"
+      "protocol": "inspector",
+      "envFile": "${workspaceFolder}/.env.debugger"
     }
   ]
 }

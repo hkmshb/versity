@@ -1,0 +1,10 @@
+{
+  "sqltools.useNodeRuntime": true,
+  "sqltools.connections": [
+    {
+      "database": "./src/server/versity.sqlite3",
+      "dialect": "SQLite",
+      "name": "versity"
+    }
+  ]
+}
