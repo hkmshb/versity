@@ -5,6 +5,35 @@ import { EntityService } from '../data/types';
 
 
 export default class SchoolController {
+
+  /**
+   * Returns a paginated list of schools.
+   */
+  listSchools = async (req: Request, res: Response): Promise<Response> => {
+    return this.findService(models.School)
+      .then(service => {
+        const schools = service.getRepository().find();
+        return schools;
+      })
+      .then(schools => {
+        return res.status(200).json(schools);
+      });
+  }
+
+  getSchool = async (req: Request, res: Response): Promise<Response> => {
+    return this.findService(models.School)
+      .then(service => service.findByIdent(req.params.ident))
+      .then(school => res.status(200).json(school))
+      .catch(err => {
+        const errmsg = {errors: {ident: err.message}};
+        if (err.message.includes('not found')) {
+          return res.status(404).json(errmsg);
+        }
+
+        return res.status(400).json(errmsg);
+      });
+  }
+
   /**
    * Creates a School from provided arguments which is then returned as part of a response.
    */
@@ -40,34 +69,6 @@ export default class SchoolController {
 
         const errmsg = {errors: {msg: err.message}};
         return res.status(400).json(errmsg);
-      });
-  }
-
-  getSchool = async (req: Request, res: Response): Promise<Response> => {
-    return this.findService(models.School)
-      .then(service => service.findByIdent(req.params.ident))
-      .then(school => res.status(200).json(school))
-      .catch(err => {
-        const errmsg = {errors: {ident: err.message}};
-        if (err.message.includes('not found')) {
-          return res.status(404).json(errmsg);
-        }
-
-        return res.status(400).json(errmsg);
-      });
-  }
-
-  /**
-   * Returns a paginated list of schools.
-   */
-  listSchools = async (req: Request, res: Response): Promise<Response> => {
-    return this.findService(models.School)
-      .then(service => {
-        const schools = service.getRepository().find();
-        return schools;
-      })
-      .then(schools => {
-        return res.status(200).json(schools);
       });
   }
 

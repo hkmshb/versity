@@ -21,11 +21,11 @@ export default class School extends BaseEntity {
   @Column({ name: 'addr_street', type: 'varchar', nullable: true })
   addrStreet: string;
 
-  @Column({ name: 'addr_state', type: 'varchar', length: 50, nullable: true })
-  addrState: string;
-
   @Column({ name: 'addr_town', type: 'varchar', length: 50, nullable: true })
   addrTown: string;
+
+  @Column({ name: 'addr_state', type: 'varchar', length: 50, nullable: true })
+  addrState: string;
 
   @ManyToOne(type => School, school => school.children)
   @JoinColumn({ name: 'parent_id' })
