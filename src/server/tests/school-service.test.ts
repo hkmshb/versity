@@ -11,11 +11,11 @@ import { getTestDbConnection } from './test-utils';
 const expect = chai.expect;
 
 
-describe('# model validation tests', async () => {
+describe('# school service & data validation tests', async () => {
   let conn: Connection;
 
   before(async () => {
-    conn = await getTestDbConnection('test-models-val#1');
+    conn = await getTestDbConnection('test-school-service+val#1');
 
     // create school entity expected to exists for some tests
     await conn.findEntityServiceFor(School).createAndSave({

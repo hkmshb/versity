@@ -38,11 +38,13 @@ export default class SchoolService extends EntityService<School, SchoolData> {
   /**
    * Finds and returns a persisted School object from storage.
    */
-  findByIdent(ident?: string | number, options?: FindOneOptions<School>): Promise<School> {
+  findByIdent(ident?: number | string, options?: FindOneOptions<School>): Promise<School> {
     return this.getRepositoryFor(School)
-      .createQueryBuilder(School.name)
-      .where('id = :ident OR code = :ident OR uuid = :ident', {ident})
-      .getOne()
+      .findOne({
+        ...options,
+        where: [{id: ident}, {uuid: ident}, {code: ident}],
+        relations: [...((options && options.relations) || []), 'parent']
+      })
       .then(school => {
         if (!school) {
           throw new Error(`School not found for '${ident}'`);
@@ -91,7 +93,7 @@ export default class SchoolService extends EntityService<School, SchoolData> {
     if (data.parentId) {
       const parent = await repository.findOne(data.parentId, {relations: ['parent']});
       if (!parent) {
-        throw new ValidationError(`Parent school not found: ${data.parent}`, data, 'parentId');
+        throw new ValidationError(`Parent school not found: ${data.parentId}`, data, 'parentId');
       } else if (parent.parent) {
         // only single hierarchy level is allowed; thus parent mustn't have a parent
         throw new ValidationError('School hierarchical relationships cannot exceed 1 level', data, 'parent');

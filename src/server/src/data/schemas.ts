@@ -1,16 +1,40 @@
-import * as yup from 'yup';
-import { School } from './models';
-
-
 // tslint:disable:interface-name
-export interface SchoolData extends Partial<School> {
-  parentId?: number;
-}
+import * as yup from 'yup';
+import { AcademicPeriod, School } from './models';
+
+
+export const buildSchemaForRequiredFields = (names: string[]) => {
+  const fields = names.map(name => ({[name]: yup.string().required()}));
+  return yup.object().shape(Object.assign({}, ...fields));
+};
 
 
 export const RequiredIdSchema = yup.object().shape({
   id: yup.number().required()
 });
+
+
+export interface AcademicPeriodData extends Partial<AcademicPeriod> {
+  parentId?: number | string;
+  schoolId?: number | string;
+}
+
+
+export const AcademicPeriodSchema = yup.object().shape({
+  id: yup.number(),
+  uuid: yup.string(),
+  parentId: yup.string(),
+  schoolId: yup.string().required(),
+  name: yup.string().required()
+    .min(7).max(50),
+  dateBegin: yup.date(),
+  dateEnd: yup.date(),
+});
+
+
+export interface SchoolData extends Partial<School> {
+  parentId?: number | string;
+}
 
 
 export const SchoolSchema = yup.object().shape({

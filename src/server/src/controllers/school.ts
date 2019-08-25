@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { ObjectType } from 'typeorm';
-import { Connection, getDbConnection, models } from '../data';
+import { getDbConnection, models } from '../data';
 import { EntityService } from '../data/types';
 
 
