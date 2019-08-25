@@ -3,9 +3,8 @@ import * as chai from 'chai';
 import * as mocha from 'mocha';
 import { itParam } from 'mocha-param';
 import moment from 'moment';
-import { Connection, models } from '../src/data';
+import { Connection } from '../src/data';
 import { AcademicPeriod, School } from '../src/data/models';
-import { AcademicPeriodService } from '../src/data/services';
 import { EntityService } from '../src/data/types';
 import { getTestDbConnection } from './test-utils';
 
@@ -42,7 +41,7 @@ describe('# academic period service & data validation tests', async () => {
 
   it('should fail creation if not associated with an institution', async () => {
     const data = {
-      name: '2018/2019',
+      name: '2018/2019', code: '2018-2019',
       dateBegin: moment().format(DATE_FMT),
       dateEnd: moment().add(2, 'd').format(DATE_FMT)
     };
@@ -61,7 +60,9 @@ describe('# academic period service & data validation tests', async () => {
     // create academic period with invalid school; this is the case because academic
     // periods are defined for an institution not a school within an instititution
     const data = {
-      name: '2018/2019-II', schoolId: school.id,
+      name: '2018/2019-II',
+      code: '2018-2019-II',
+      schoolId: school.id,
       dateBegin: moment().format(DATE_FMT),
       dateEnd: moment().add(1, 'd').format(DATE_FMT)
     };
@@ -83,7 +84,12 @@ describe('# academic period service & data validation tests', async () => {
   itParam('should fail creation for incomplete date range (only: ${value.name})',
           academicPeriodWithIncompleteDateRange, async entry => {
     // create academic period with an associated institution but incomplete date range
-    const data = {name: '2018/2019-III', schoolId: institution.id, [entry.name]: entry.value};
+    const data = {
+      name: '2018/2019-III',
+      code: '2018-2019-III',
+      schoolId: institution.id,
+      [entry.name]: entry.value
+    };
     return periodService
       .createAndSave(data)
       .then(_ => { throw new Error('execution should not get here'); })
@@ -96,7 +102,9 @@ describe('# academic period service & data validation tests', async () => {
 
   it('should fail creation for invalid date range', async () => {
     const data = {
-      name: '2018/2019-IV', schoolId: institution.id,
+      name: '2018/2019-IV',
+      code: '2018-2019-IV',
+      schoolId: institution.id,
       dateBegin: moment().add(7, 'd').format(DATE_FMT),
       dateEnd: moment().format(DATE_FMT)
     };
@@ -112,7 +120,9 @@ describe('# academic period service & data validation tests', async () => {
 
   it('should fail creation for child semester with date outside session', async () => {
     const sessionData = {
-      name: '2018/2019-V', schoolId: institution.id,
+      name: '2018/2019-V',
+      code: '2018-2019-V',
+      schoolId: institution.id,
       dateBegin: moment().format(DATE_FMT),
       dateEnd: moment().add(30, 'd').format(DATE_FMT)
     };
@@ -121,7 +131,9 @@ describe('# academic period service & data validation tests', async () => {
     expect(session.id).to.be.greaterThan(0);
 
     const semesterData = {
-      name: '1st Semester', parentId: session.id,
+      name: '1st Semester',
+      code: '1st-semester',
+      parentId: session.id,
       dateBegin: moment().subtract(1, 'd').format(DATE_FMT),
       dateEnd: moment().add(10, 'd').format(DATE_FMT)
     };
@@ -138,13 +150,19 @@ describe('# academic period service & data validation tests', async () => {
 
   it('should fail creation for child semesters with overlapping date range', async () => {
     // create academic period
-    const sessiondata = {name: '2018/2019-VI', schoolId: institution.id};
+    const sessiondata = {
+      name: '2018/2019-VI',
+      code: '2018-2019-VI',
+      schoolId: institution.id
+    };
     const session = await periodService.createAndSave(sessiondata);
     expect(session.id).to.be.greaterThan(0);
 
     // create first valid semester
     const semesterdata1 = {
-      name: '1st Semester', parentId: session.id,
+      name: '1st Semester',
+      code: '1st-semester',
+      parentId: session.id,
       dateBegin: moment().format(DATE_FMT),
       dateEnd: moment().add(10, 'd').format(DATE_FMT)
     };
@@ -152,7 +170,9 @@ describe('# academic period service & data validation tests', async () => {
     expect(semester1.id).to.be.greaterThan(0);
 
     const semesterdata2  = {
-      name: '2nd Semester', parentId: session.id,
+      name: '2nd Semester',
+      code: '2nd-semester',
+      parentId: session.id,
       dateBegin: moment().add(8, 'd').format(DATE_FMT),
       dateEnd: moment().add(20, 'd').format(DATE_FMT)
     };
@@ -167,8 +187,13 @@ describe('# academic period service & data validation tests', async () => {
   });
 
   it('should ensure parent exist for provided parentId', async () => {
-    const data = {name: '2018/2019-#X1', schoolId: institution.id, parentId: 'unknown-id'};
-    // expect(async () => await periodService.createAndSave(data)).to.throw();
+    const data = {
+      name: '2018/2019-#X1',
+      code: '2018-2019-#X1',
+      schoolId: institution.id,
+      parentId: 'unknown-id'
+    };
+
     return periodService
       .createAndSave(data)
       .then(_ => { throw new Error('execution should not get here'); })
@@ -180,32 +205,50 @@ describe('# academic period service & data validation tests', async () => {
   });
 
   it('can create session w/o date range', async () => {
-    const sessiondata = {name: '2018/2019-#V1', schoolId: institution.id};
+    const sessiondata = {
+      name: '2018/2019-#V1',
+      code: '2018-2019-#V1',
+      schoolId: institution.id
+    };
     return periodService
       .createAndSave(sessiondata)
       .then(period => expect(period.id).to.be.greaterThan(0));
   });
 
   it('can create session and child semester all w/o date range', async () => {
-    const sessiondata = {name: '2018/2019-#V2', schoolId: institution.id};
+    const sessiondata = {
+      name: '2018/2019-#V2',
+      code: '2018-2019-#V2',
+      schoolId: institution.id
+    };
     return periodService
       .createAndSave(sessiondata)
       .then(session => {
         expect(session.id).to.be.greaterThan(0);
-        const semesteradta = {name: '1st Semester', parentId: session.id};
+        const semesteradta = {
+          name: '1st Semester',
+          code: '1st-semester',
+          parentId: session.id
+        };
         return periodService.createAndSave(semesteradta);
       })
       .then(semester => expect(semester.id).to.be.greaterThan(0));
   });
 
   it('can create session w/o date range but child semester with date range', async () => {
-    const sessiondata = {name: '2018/2019-#V3', schoolId: institution.id};
+    const sessiondata = {
+      name: '2018/2019-#V3',
+      code: '2018-2019-#V3',
+      schoolId: institution.id
+    };
     return periodService
       .createAndSave(sessiondata)
       .then(session => {
         expect(session.id).to.be.greaterThan(0);
         const semesterdata = {
-          name: '1st Semeter', parentId: session.id,
+          name: '1st Semeter',
+          code: '1st-semester',
+          parentId: session.id,
           dateBegin: moment().format(DATE_FMT),
           dateEnd: moment().add(7, 'd').format(DATE_FMT)
         };

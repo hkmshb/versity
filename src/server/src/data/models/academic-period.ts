@@ -7,10 +7,14 @@ import School from './school';
 @Entity()
 @Check(`"school_id" IS NOT NULL OR "school_id" != 0`)
 @Unique(['school', 'parent', 'name'])
+@Unique(['school', 'parent', 'code'])
 export default class AcademicPeriod extends BaseEntity {
 
   @Column({ type: 'varchar', nullable: false })
   name: string;
+
+  @Column({ type: 'varchar', nullable: false })
+  code: string;
 
   @Column({ name: 'date_begin', nullable: true })
   dateBegin: Date;

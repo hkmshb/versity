@@ -2,22 +2,18 @@ import { Request, Response } from 'express';
 import { ObjectType } from 'typeorm';
 import { getDbConnection, models } from '../data';
 import { EntityService } from '../data/types';
+import { BaseController } from './types';
 
 
-export default class SchoolController {
+export default class SchoolController extends BaseController {
 
   /**
    * Returns a paginated list of schools.
    */
   listSchools = async (req: Request, res: Response): Promise<Response> => {
     return this.findService(models.School)
-      .then(service => {
-        const schools = service.getRepository().find();
-        return schools;
-      })
-      .then(schools => {
-        return res.status(200).json(schools);
-      });
+      .then(service => service.getRepository().find())
+      .then(schools => res.status(200).json(schools));
   }
 
   getSchool = async (req: Request, res: Response): Promise<Response> => {
@@ -29,7 +25,6 @@ export default class SchoolController {
         if (err.message.includes('not found')) {
           return res.status(404).json(errmsg);
         }
-
         return res.status(400).json(errmsg);
       });
   }
@@ -70,12 +65,5 @@ export default class SchoolController {
         const errmsg = {errors: {msg: err.message}};
         return res.status(400).json(errmsg);
       });
-  }
-
-  findService = <T>(entity: ObjectType<T>): Promise<EntityService<T, any>> => {
-    return getDbConnection()
-      .then(conn => (
-        conn.findEntityServiceFor(entity)
-      ));
   }
 }
