@@ -3,7 +3,7 @@ import { EntityRepository, FindOneOptions, Repository } from 'typeorm';
 import { ObjectSchema, ValidationError } from 'yup';
 import { SchoolService } from '.';
 import { AcademicPeriod, School } from '../models';
-import { AcademicPeriodData, AcademicPeriodSchema } from '../schemas';
+import { AcademicPeriodData, AcademicPeriodSchema, RequiredIdSchema } from '../schemas';
 import { EntityService } from '../types';
 
 
@@ -20,11 +20,34 @@ export default class AcademicPeriodService extends EntityService<AcademicPeriod,
   }
 
   async updateAndSave(values: AcademicPeriodData): Promise<AcademicPeriod> {
-    return null;
+    const periodId = RequiredIdSchema.validateSync(values);
+    const period = this.getRepositoryFor(AcademicPeriod)
+      .findOne(periodId, {relations: ['parent']});
+
+    if (!period) {
+      throw new ValidationError(
+        `Academic period not found for ${periodId}`, values, 'periodId'
+      );
+    }
+
+    const data = await this.validate(AcademicPeriodSchema, values);
+    const instance = this.manager.create(AcademicPeriod, {...period, ...data});
+    return this.manager.save(instance);
   }
 
   findByIdent(ident?: number | string, options?: FindOneOptions<AcademicPeriod>): Promise<AcademicPeriod> {
-    return null;
+    return this.getRepositoryFor(AcademicPeriod)
+      .findOne({
+        ...options,
+        where: [{id: ident}, {uuid: ident}, {code: ident}],
+        relations: [...((options && options.relations) || []), 'parent']
+      })
+      .then(period => {
+        if (!period) {
+          throw new Error(`Academic period not found for '${ident}'`);
+        }
+        return period;
+      });
   }
 
   /**

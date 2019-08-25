@@ -1,5 +1,6 @@
 import { Request, Response, Router } from 'express';
 import * as conf from '../config';
+import academicPeriodRoutes from './academic-period';
 import schoolRoutes from './school';
 
 
@@ -9,7 +10,8 @@ import schoolRoutes from './school';
 export default class ApiRoutes {
   router: Router = Router();
   private routes: Array<{name: string, path: string, router: Router}> = [
-    {name: 'schools', path: '/schools', router: schoolRoutes}
+    {name: 'academic-periods', path: '/academic-periods', router: academicPeriodRoutes},
+    {name: 'schools', path: '/schools', router: schoolRoutes},
   ];
 
   constructor(app) {
