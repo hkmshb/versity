@@ -1,83 +1,83 @@
 import { EntityRepository, FindOneOptions, Repository } from 'typeorm';
 import { ObjectSchema, ValidationError } from 'yup';
-import { School } from '../models';
-import { RequiredIdSchema, SchoolData, SchoolSchema } from '../schemas';
+import { AcademicSection } from '../models';
+import { AcademicSectionData, AcademicSectionSchema, RequiredIdSchema } from '../schemas';
 import { EntityService } from '../types';
 
 
-@EntityRepository(School)
-export default class SchoolService extends EntityService<School, SchoolData> {
+@EntityRepository(AcademicSection)
+export default class AcademicSectionService extends EntityService<AcademicSection, AcademicSectionData> {
 
   /**
-   * Creates a School object from provided arguments and persists the object to storage.
+   * Creates a Academic section object from provided arguments and persists the object to storage.
    */
-  async createAndSave(values: SchoolData): Promise<School> {
+  async createAndSave(values: AcademicSectionData): Promise<AcademicSection> {
     // validate against schema
-    const data = await this.validate(SchoolSchema, values);
-    const instance = this.manager.create(School, data);
+    const data = await this.validate(AcademicSectionSchema, values);
+    const instance = this.manager.create(AcademicSection, data);
     return this.manager.save(instance);
   }
 
   /**
    * Updates an existing entity.
    */
-  async updateAndSave(values: SchoolData): Promise<School> {
-    const schoolId = RequiredIdSchema.validateSync(values);
-    const school = this.getRepositoryFor(School)
-      .findOne(schoolId, {relations: ['parent', 'children']});
+  async updateAndSave(values: AcademicSectionData): Promise<AcademicSection> {
+    const sectionId = RequiredIdSchema.validateSync(values);
+    const section = this.getRepositoryFor(AcademicSection)
+      .findOne(sectionId, {relations: ['parent', 'children']});
 
-    if (!school) {
-      throw new ValidationError(`School not found for ${schoolId}`, values, 'id');
+    if (!section) {
+      throw new ValidationError(`Academic section not found for ${sectionId}`, values, 'id');
     }
 
-    const data = await this.validate(SchoolSchema, values);
-    const instance = this.manager.create(School, {...school, ...data});
+    const data = await this.validate(AcademicSectionSchema, values);
+    const instance = this.manager.create(AcademicSection, {...section, ...data});
     return this.manager.save(instance);
   }
 
   /**
-   * Finds and returns a persisted School object from storage.
+   * Finds and returns a persisted Academic section object from storage.
    */
-  findByIdent(ident?: number | string, options?: FindOneOptions<School>): Promise<School> {
-    return this.getRepositoryFor(School)
+  findByIdent(ident?: number | string, options?: FindOneOptions<AcademicSection>): Promise<AcademicSection> {
+    return this.getRepositoryFor(AcademicSection)
       .findOne({
         ...options,
         where: [{id: ident}, {uuid: ident}, {code: ident}],
         relations: [...((options && options.relations) || []), 'parent']
       })
-      .then(school => {
-        if (!school) {
-          throw new Error(`School not found for '${ident}'`);
+      .then(section => {
+        if (!section) {
+          throw new Error(`Academic section not found for '${ident}'`);
         }
-        return school;
+        return section;
       });
   }
 
   /**
-   * Returns the ORM repository for managing School entities.
+   * Returns the ORM repository for managing Academic section entities.
    */
-  getRepository(): Repository<School> {
-    return this.getRepositoryFor(School);
+  getRepository(): Repository<AcademicSection> {
+    return this.getRepositoryFor(AcademicSection);
   }
 
-  private async validate(schema: ObjectSchema, values: SchoolData): Promise<SchoolData> {
+  private async validate(schema: ObjectSchema, values: AcademicSectionData): Promise<AcademicSectionData> {
     // perform schema validation
-    const data: SchoolData = schema.validateSync(values);
+    const data: AcademicSectionData = schema.validateSync(values);
 
     // more business logic validations
     let whereCondition: string = [
-      'school.name = :name',
-      'school.code = :code',
-      'school.nickname = :nickname'
+      'academicSection.name = :name',
+      'academicSection.code = :code',
+      'academicSection.nickname = :nickname'
     ].join(' OR ');
 
     if (values.id) {
-      whereCondition = `(${whereCondition}) AND (school.id != :id)`;
+      whereCondition = `(${whereCondition}) AND (academicSection.id != :id)`;
     }
 
     const repository = this.getRepository();
     const found = await repository
-      .createQueryBuilder(School.name)
+      .createQueryBuilder(AcademicSection.name)
       .where(whereCondition, data)
       .getOne();
 
@@ -93,10 +93,10 @@ export default class SchoolService extends EntityService<School, SchoolData> {
     if (data.parentId) {
       const parent = await repository.findOne(data.parentId, {relations: ['parent']});
       if (!parent) {
-        throw new ValidationError(`Parent school not found: ${data.parentId}`, data, 'parentId');
+        throw new ValidationError(`Parent academic section not found: ${data.parentId}`, data, 'parentId');
       } else if (parent.parent) {
         // only single hierarchy level is allowed; thus parent mustn't have a parent
-        throw new ValidationError('School hierarchical relationships cannot exceed 1 level', data, 'parent');
+        throw new ValidationError('Academic section hierarchical relationships cannot exceed 1 level', data, 'parent');
       }
 
       data.parent = parent;

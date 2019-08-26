@@ -4,7 +4,7 @@ import * as mocha from 'mocha';
 import { itParam } from 'mocha-param';
 import moment from 'moment';
 import { Connection } from '../src/data';
-import { AcademicPeriod, School } from '../src/data/models';
+import { AcademicPeriod, AcademicSection } from '../src/data/models';
 import { EntityService } from '../src/data/types';
 import { getTestDbConnection } from './test-utils';
 
@@ -15,8 +15,8 @@ const DATE_FMT = 'YYYY-MM-DD';
 
 describe('# academic period service & data validation tests', async () => {
   let conn: Connection;
-  let school: School = null;
-  let institution: School = null;
+  let school: AcademicSection = null;
+  let institution: AcademicSection = null;
   let periodService: EntityService<AcademicPeriod, any> = null;
 
   before(async () => {
@@ -24,7 +24,7 @@ describe('# academic period service & data validation tests', async () => {
     periodService = conn.findEntityServiceFor(AcademicPeriod);
 
     // create school entity expected to exits for some tests
-    const schoolService = conn.findEntityServiceFor(School);
+    const schoolService = conn.findEntityServiceFor(AcademicSection);
     return schoolService
       .createAndSave({name: 'Baobab University', code: 'baobab-university', nickname: 'BU'})
       .then(inst => {

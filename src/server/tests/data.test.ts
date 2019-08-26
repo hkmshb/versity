@@ -21,7 +21,7 @@ describe('# connection tests', async () => {
   ));
 
   it('should retrieve entity service using findEntityService on connection', () => {
-    const service = conn.findEntityServiceFor(models.School);
+    const service = conn.findEntityServiceFor(models.AcademicSection);
     expect(service).to.not.be.undefined;
     expect(service).to.not.be.null;
   });

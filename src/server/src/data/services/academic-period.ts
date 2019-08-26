@@ -1,7 +1,7 @@
 import moment from 'moment';
 import { EntityRepository, FindOneOptions, Repository } from 'typeorm';
 import { ObjectSchema, ValidationError } from 'yup';
-import { AcademicPeriod, School } from '../models';
+import { AcademicPeriod, AcademicSection } from '../models';
 import { AcademicPeriodData, AcademicPeriodSchema, RequiredIdSchema } from '../schemas';
 import { EntityService } from '../types';
 
@@ -57,43 +57,43 @@ export default class AcademicPeriodService extends EntityService<AcademicPeriod,
   }
 
   private async validate(schema: ObjectSchema, values: AcademicPeriodData): Promise<AcademicPeriodData> {
-    let school: School = null;
+    let section: AcademicSection = null;
     let parent: AcademicPeriod = null;
 
     const repository = this.getRepository();
 
     // check for AcademicPeriod object if parentId is given
     if (values.parentId) {
-      parent = await repository.findOne(values.parentId, {relations: ['parent', 'school']});
+      parent = await repository.findOne(values.parentId, {relations: ['parent', 'academicSection']});
       if (!parent) {
         throw new ValidationError(`Parent academic period not found: ${values.parentId}`, values, 'parentId');
       }
 
-      if (!values.schoolId && !parent.school) {
+      if (!values.schoolId && !parent.academicSection) {
         throw new ValidationError(
           `School not found for parent with id '${values.parentId}'`,
           values, 'parentId'
         );
       }
 
-      school = parent.school;
-      values.schoolId = parent.school.id;
+      section = parent.academicSection;
+      values.schoolId = parent.academicSection.id;
     }
 
     // perform schema validation
     const data: AcademicPeriodData = schema.validateSync(values);
 
     // check for School object if schoolId is given
-    if (data.schoolId && !school) {
-      const schoolService = this.manager.connection.findEntityServiceFor(School);
-      school = await schoolService.findByIdent(data.schoolId);
-      if (!school) {
+    if (data.schoolId && !section) {
+      const schoolService = this.manager.connection.findEntityServiceFor(AcademicSection);
+      section = await schoolService.findByIdent(data.schoolId);
+      if (!section) {
         throw new ValidationError(`School not found: ${data.schoolId}`, data, 'schoolId');
       }
     }
 
     // ensure associated school is an institution i.e. has not parent school
-    if (school.parent) {
+    if (section.parent) {
       throw new ValidationError(
         'Academic periods can only be created for top level schools', data, 'schoolId'
       );
@@ -126,7 +126,7 @@ export default class AcademicPeriodService extends EntityService<AcademicPeriod,
     }
 
     data.parent = parent;
-    data.school = school;
+    data.academicSection = section;
     return data;
   }
 

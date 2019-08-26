@@ -2,21 +2,21 @@
   {
     "name": "2016/2017",
     "code": "2016-2017",
-    "school": "$ref:nickname=KUT"
+    "academicSection": "$ref:nickname=KUT"
   },
   {
     "name": "2017/2018",
     "code": "2017-2018",
     "dateBegin": "2017-10-01",
     "dateEnd": "2018-07-31",
-    "school": "$ref:nickname=KUT"
+    "academicSection": "$ref:nickname=KUT"
   },
   {
     "name": "2018/2019",
     "code": "2018-2019",
     "dateBegin": "2018-10-01",
     "dateEnd": "2019-07-31",
-    "school": "$ref:code=baobab-school-of-medicine",
+    "academicSection": "$ref:code=baobab-school-of-medicine",
     "children": [
       {
         "name": "1st Semester",

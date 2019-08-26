@@ -1,5 +1,5 @@
 import AcademicPeriod from './academic-period';
-import School from './academic-section';
+import AcademicSection from './academic-section';
 import Course from './course';
 import Department from './department';
 import Document from './document';
@@ -10,6 +10,7 @@ import Programme from './programme';
 
 export {
   AcademicPeriod,
+  AcademicSection,
   BaseEntity,
   Course,
   Department,
@@ -17,5 +18,4 @@ export {
   Lecturer,
   NamedEntity,
   Programme,
-  School,
 };

@@ -6,7 +6,7 @@ import { itParam } from 'mocha-param';
 import moment from 'moment';
 import VersityServer from '../src/app';
 import { Connection, getDbConnection } from '../src/data';
-import { AcademicPeriod, School } from '../src/data/models';
+import { AcademicPeriod, AcademicSection } from '../src/data/models';
 import { EntityService } from '../src/data/types';
 import { getTestDbConnection } from './test-utils';
 
@@ -18,7 +18,7 @@ const DATE_FMT = 'YYYY-MM-DD';
 
 describe('# academic-period controller tests', () => {
   let conn: Connection;
-  let institution: School;
+  let institution: AcademicSection;
   let server: VersityServer;
   const endpoint = '/academic-periods';
   let periodService: EntityService<AcademicPeriod, any> = null;
@@ -29,7 +29,7 @@ describe('# academic-period controller tests', () => {
     periodService = conn.findEntityServiceFor(AcademicPeriod);
 
     // create school entity expected to exits for some tests
-    const schoolService = conn.findEntityServiceFor(School);
+    const schoolService = conn.findEntityServiceFor(AcademicSection);
     return schoolService
       .createAndSave({name: 'Baobab University', code: 'baobab-university', nickname: 'BU'})
       .then(async inst => {

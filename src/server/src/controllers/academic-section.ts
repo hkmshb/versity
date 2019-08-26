@@ -6,18 +6,18 @@ import { BaseController } from './types';
 export default class AcademicSectionController extends BaseController {
 
   /**
-   * Returns a paginated list of schools.
+   * Returns a paginated list of sections.
    */
   listSchools = async (req: Request, res: Response): Promise<Response> => {
-    return this.findService(models.School)
+    return this.findService(models.AcademicSection)
       .then(service => service.getRepository().find())
-      .then(schools => res.status(200).json(schools));
+      .then(sections => res.status(200).json(sections));
   }
 
   getSchool = async (req: Request, res: Response): Promise<Response> => {
-    return this.findService(models.School)
+    return this.findService(models.AcademicSection)
       .then(service => service.findByIdent(req.params.ident))
-      .then(school => res.status(200).json(school))
+      .then(section => res.status(200).json(section))
       .catch(err => {
         const errmsg = {errors: {ident: err.message}};
         if (err.message.includes('not found')) {
@@ -31,10 +31,10 @@ export default class AcademicSectionController extends BaseController {
    * Creates a School from provided arguments which is then returned as part of a response.
    */
   createSchool = async (req: Request, res: Response): Promise<Response> => {
-    return this.findService(models.School)
+    return this.findService(models.AcademicSection)
       .then(service => service.createAndSave({...req.body}))
-      .then(school => {
-        return res.status(201).json(school);
+      .then(section => {
+        return res.status(201).json(section);
       })
       .catch(err => {
         const errmsg = {errors: err.message};
@@ -47,13 +47,13 @@ export default class AcademicSectionController extends BaseController {
   }
 
   updateSchool = async (req: Request, res: Response): Promise<Response> => {
-    const service = await this.findService(models.School);
+    const service = await this.findService(models.AcademicSection);
     return service.findByIdent(req.params.ident)
-      .then(school => {
-        const schoolUpdate = {...school, ...req.body};
-        return service.updateAndSave(schoolUpdate);
+      .then(section => {
+        const updateData = {...section, ...req.body};
+        return service.updateAndSave(updateData);
       })
-      .then(school => res.status(200).json(school))
+      .then(section => res.status(200).json(section))
       .catch(err => {
         if (err.message.includes('not found')) {
           const errnotfound = {errors: {ident: err.message}};

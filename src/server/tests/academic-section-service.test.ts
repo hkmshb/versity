@@ -3,8 +3,8 @@ import * as chai from 'chai';
 import * as mocha from 'mocha';
 import { itParam } from 'mocha-param';
 import { Connection, models } from '../src/data';
-import { School } from '../src/data/models';
-import { SchoolService } from '../src/data/services';
+import { AcademicSection } from '../src/data/models';
+import { AcademicSectionService } from '../src/data/services';
 import { getTestDbConnection } from './test-utils';
 
 
@@ -18,7 +18,7 @@ describe('# school service & data validation tests', async () => {
     conn = await getTestDbConnection('test-school-service+val#1');
 
     // create school entity expected to exists for some tests
-    await conn.findEntityServiceFor(School).createAndSave({
+    await conn.findEntityServiceFor(AcademicSection).createAndSave({
       name: 'Baobab University', code: 'baobab-university', nickname: 'BU'
     });
   });
@@ -34,7 +34,7 @@ describe('# school service & data validation tests', async () => {
   itParam('should fail validation for missing or invalid field',
           schoolWithInvalidNameOrNickname, entry => {
     return conn
-      .findEntityServiceFor(models.School)
+      .findEntityServiceFor(models.AcademicSection)
       .createAndSave(entry)
       .then(value => { throw new Error(`expected createAndSave to fail: ${value}`); })
       .catch(err => expect(err.errors).to.not.be.empty);
@@ -48,8 +48,8 @@ describe('# school service & data validation tests', async () => {
 
   itParam('should report unique (${value.name}) constraint voilations when creating schools',
           schoolFieldsViolatingUniqueConstraint, entry => {
-    // alternative form for: conn.findEntityServiceFor(School)
-    const service = conn.getCustomRepository(SchoolService);
+    // alternative form for: conn.findEntityServiceFor(AcademicSection)
+    const service = conn.getCustomRepository(AcademicSectionService);
     const repository = service.getRepository();
     expect(repository).to.not.be.undefined;
     expect(repository).to.not.be.null;
@@ -75,7 +75,7 @@ describe('# school service & data validation tests', async () => {
   });
 
   it('should report unique constraint voilations when updating schools', async () => {
-    const service = conn.findEntityServiceFor(School);
+    const service = conn.findEntityServiceFor(AcademicSection);
     const school = await service.createAndSave({
       name: 'school.90210+', code: 'school-90210+', nickname: '90210+',
     });
@@ -97,7 +97,7 @@ describe('# school service & data validation tests', async () => {
   });
 
   it('should enforce one-level deep school hierarchy when creating schools', () => {
-    const service = conn.findEntityServiceFor(School);
+    const service = conn.findEntityServiceFor(AcademicSection);
     return service.createAndSave({
       name: 'school.name#paent', code: 'school-name#parent', nickname: 'sn#p'
     })
@@ -124,12 +124,12 @@ describe('# school service & data validation tests', async () => {
     .then(child2 => { throw new Error('Execution should not get here'); })
     .catch(err => {
       expect(err.name).to.equal('ValidationError');
-      expect(err.message).to.equal('School hierarchical relationships cannot exceed 1 level');
+      expect(err.message).to.equal('Academic section hierarchical relationships cannot exceed 1 level');
     });
   });
 
   it('should enforce one-level deep school hierarchy when updating schools', async () => {
-    const service = conn.findEntityServiceFor(School);
+    const service = conn.findEntityServiceFor(AcademicSection);
     const school = await service.createAndSave({
       name: 'school.90210', code: 'school-90210', nickname: '90210',
       parent: await service.createAndSave({
@@ -147,7 +147,7 @@ describe('# school service & data validation tests', async () => {
     .then(_ => { throw new Error('Execution should not get here'); })
     .catch(err => {
       expect(err.name).to.equal('ValidationError');
-      expect(err.message).to.equal('School hierarchical relationships cannot exceed 1 level');
+      expect(err.message).to.equal('Academic section hierarchical relationships cannot exceed 1 level');
     });
   });
 

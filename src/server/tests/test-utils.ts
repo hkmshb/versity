@@ -63,7 +63,7 @@ export class FixtureLoader {
     this.loadOrder = [];
 
     const loadOrder = [
-      models.School.name,
+      models.AcademicSection.name,
       models.AcademicPeriod.name,
       models.Department.name,
       models.Programme.name,
@@ -88,40 +88,38 @@ export class FixtureLoader {
       const service = this.conn.findEntityServiceFor(entity);
       return await service.createAndSave(args);
     } catch (err) {
-      // console.log(`type: ${entity.name} error: ${JSON.stringify(err, null, 2)}`);
       const repository = this.conn.getRepository(entity);
       const instance = repository.create(args) as T;
       return await repository.save(instance);
     }
   }
 
-  async loadSchool(values): Promise<models.School> {
+  async loadAcademicSection(values): Promise<models.AcademicSection> {
     const { children, ...args } = values;
-    const savedSchool = await this.load(models.School, args);
+    const savedSchool = await this.load(models.AcademicSection, args);
     if (children) {
       for (const child of children) {
-        await this.loadSchool({ ...child, parentId: savedSchool.id });
+        await this.loadAcademicSection({ ...child, parentId: savedSchool.id });
       }
     }
     return savedSchool;
   }
 
   async loadAcademicPeriod(values): Promise<models.AcademicPeriod> {
-    const { children, school, ...args } = values;
-    const schoolInstance = await this.findSchool(school);
-    const savedPeriod = await this.load(models.AcademicPeriod, {...args, school: schoolInstance});
+    const { children, academicSection, ...args } = values;
+    const section = await this.findAcademicSection(academicSection);
+    const savedPeriod = await this.load(models.AcademicPeriod, {...args, academicSection: section});
     if (children) {
       for (const child of children) {
         await this.loadAcademicPeriod({ ...child, parent: savedPeriod });
       }
     }
-    // console.log(JSON.stringify(savedPeriod, null, 2));
     return savedPeriod;
   }
 
   async loadDepartment(values): Promise<models.Department> {
     const { programmes, school, ...args } = values;
-    const schoolInstance = await this.findSchool(school);
+    const schoolInstance = await this.findAcademicSection(school);
     const savedDept = await this.load(models.Department, { ...args, school: schoolInstance });
 
     if (programmes) {
@@ -149,16 +147,16 @@ export class FixtureLoader {
     return null;
   }
 
-  async findSchool(schoolRef): Promise<models.School> {
-    let school: models.School = null;
+  async findAcademicSection(schoolRef): Promise<models.AcademicSection> {
+    let school: models.AcademicSection = null;
     if (schoolRef) {
       if (typeof schoolRef === 'string' && schoolRef.startsWith('$ref:')) {
-        const repo = this.conn.getRepository(models.School);
+        const repo = this.conn.getRepository(models.AcademicSection);
         const [ field, value ] = schoolRef.substring(5).trim().split('=');
         const condition = {[field]: value};
         school = await repo.findOne(condition);
       } else {
-        school = await this.loadSchool(schoolRef);
+        school = await this.loadAcademicSection(schoolRef);
       }
 
       if (!school) throw new Error(`School not found: ${schoolRef}`);

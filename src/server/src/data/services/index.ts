@@ -1,8 +1,8 @@
 import AcademicPeriodService from './academic-period';
-import SchoolService from './academic-section';
+import AcademicSectionService from './academic-section';
 
 
 export {
   AcademicPeriodService,
-  SchoolService
+  AcademicSectionService
 };
