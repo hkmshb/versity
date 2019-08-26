@@ -1,11 +1,9 @@
 import { Request, Response } from 'express';
-import { ObjectType } from 'typeorm';
-import { getDbConnection, models } from '../data';
-import { EntityService } from '../data/types';
+import { models } from '../data';
 import { BaseController } from './types';
 
 
-export default class SchoolController extends BaseController {
+export default class AcademicSectionController extends BaseController {
 
   /**
    * Returns a paginated list of schools.

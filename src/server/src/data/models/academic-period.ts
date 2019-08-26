@@ -1,7 +1,7 @@
 import { Check, Column, Entity, JoinColumn, ManyToOne, OneToMany, Unique } from 'typeorm';
+import School from './academic-section';
 import Document from './document';
 import { BaseEntity } from './entity';
-import School from './school';
 
 
 @Entity()

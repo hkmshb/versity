@@ -1,7 +1,7 @@
 import { Request, Response, Router } from 'express';
 import * as conf from '../config';
 import academicPeriodRoutes from './academic-period';
-import schoolRoutes from './school';
+import schoolRoutes from './academic-section';
 
 
 /**

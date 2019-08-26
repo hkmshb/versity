@@ -1,7 +1,6 @@
 import moment from 'moment';
 import { EntityRepository, FindOneOptions, Repository } from 'typeorm';
 import { ObjectSchema, ValidationError } from 'yup';
-import { SchoolService } from '.';
 import { AcademicPeriod, School } from '../models';
 import { AcademicPeriodData, AcademicPeriodSchema, RequiredIdSchema } from '../schemas';
 import { EntityService } from '../types';

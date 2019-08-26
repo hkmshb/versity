@@ -1,5 +1,5 @@
 import AcademicPeriodService from './academic-period';
-import SchoolService from './school';
+import SchoolService from './academic-section';
 
 
 export {

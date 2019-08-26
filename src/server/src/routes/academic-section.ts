@@ -1,10 +1,10 @@
 import { Router } from 'express';
-import { SchoolController } from '../controllers';
+import { AcademicSectionController } from '../controllers';
 
 
-class SchoolRoutes {
+class AcademicSectionRoutes {
   router: Router = Router();
-  private controller = new SchoolController();
+  private controller = new AcademicSectionController();
 
   constructor() {
     this.config();
@@ -21,5 +21,5 @@ class SchoolRoutes {
   }
 }
 
-const routes = new SchoolRoutes().router;
+const routes = new AcademicSectionRoutes().router;
 export default routes;

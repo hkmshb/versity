@@ -1,8 +1,8 @@
 import { Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import School from './academic-section';
 import NamedEntity from './entity';
 import Lecturer from './lecturer';
 import Programme from './programme';
-import School from './school';
 
 
 @Entity()
