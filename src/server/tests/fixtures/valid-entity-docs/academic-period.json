@@ -20,11 +20,13 @@
     "children": [
       {
         "name": "1st Semester",
+        "code": "1st-semester",
         "dateBegin": "2018-10-01",
         "dateEnd": "2019-02-15"
       },
       {
         "name": "2nd Semester",
+        "code": "2nd-semester",
         "dateBegin": "2019-04-04",
         "dateEnd": "2019-07-31"
       }

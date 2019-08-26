@@ -32,28 +32,25 @@ export const loadValidEntityFixtures = async (loader: FixtureLoader = null) => {
   const conn = await getTestDbConnection();
   loader = loader || new FixtureLoader(conn);
 
-  const promises = [];
-  loader.loadOrder.forEach(entity => {
-    const fname = entity.tableName.replace('_', '-').toLowerCase();
-    const fixtureFile = `${__dirname}/fixtures/valid-entity-docs/${fname}.json`;
-    if (!fs.existsSync(fixtureFile)) return;
+  try {
+    for (const entity of loader.loadOrder) {
+      const fname = entity.tableName.replace('_', '-').toLowerCase();
+      const fixtureFile = `${__dirname}/fixtures/valid-entity-docs/${fname}.json`;
+      if (!fs.existsSync(fixtureFile)) continue;
 
-    const items = JSON.parse(fs.readFileSync(fixtureFile, 'utf8'));
-    items.forEach(item => {
+      const items = JSON.parse(fs.readFileSync(fixtureFile, 'utf8'));
       const loaderFunc = loader[`load${entity.name}`];
       if (loaderFunc) {
-        promises.push(loaderFunc.bind(loader)(item));
+        for (const item of items) {
+          await loaderFunc.bind(loader)(item);
+        }
       }
-    });
-  });
-
-  return Promise
-    .all(promises)
-    .then(res => true)
-    .catch(err => {
-      console.log(`error [load fixture] : ${err}`);
-      return false;
-    });
+    }
+    return true;
+  } catch (err) {
+    console.log(`error [load fixtures] : ${err}`);
+  }
+  return false;
 };
 
 
@@ -154,15 +151,11 @@ export class FixtureLoader {
 
   async findSchool(schoolRef): Promise<models.School> {
     let school: models.School = null;
-    if (schoolRef) { // && !school) {
+    if (schoolRef) {
       if (typeof schoolRef === 'string' && schoolRef.startsWith('$ref:')) {
         const repo = this.conn.getRepository(models.School);
         const [ field, value ] = schoolRef.substring(5).trim().split('=');
-
-        // HACK:
-        // findOne had to be called twice in order to retrieve existing record :shrug:
         const condition = {[field]: value};
-        school = await repo.findOne(condition);
         school = await repo.findOne(condition);
       } else {
         school = await this.loadSchool(schoolRef);
