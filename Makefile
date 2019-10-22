@@ -52,6 +52,11 @@ test-server:
 	[[ -f .env.test ]] && source .env.test; \
 	yarn ${SERVER_DIR} test
 
+test-file:
+	@set -e; \
+	[[ -f .env.test ]] && source .env.test; \
+	yarn ${SERVER_DIR} test-file ${args}
+
 test: test-client test-server
 
 pre-commit: lint test

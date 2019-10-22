@@ -1,13 +1,25 @@
 import moment from 'moment';
-import { EntityRepository, FindOneOptions, Repository } from 'typeorm';
-import { ObjectSchema, ValidationError } from 'yup';
+import { EntityManager, EntityRepository, FindOneOptions, Repository } from 'typeorm';
+import { ObjectSchema, ValidationError as YupError } from 'yup';
 import { AcademicPeriod, AcademicSection } from '../models';
 import { AcademicPeriodData, AcademicPeriodSchema, RequiredIdSchema } from '../schemas';
-import { EntityService } from '../types';
+import { EntityError, EntityService, ValidationError } from '../types';
+import {
+  DateRangeValidator,
+  ParentAcademicPeriodValidator,
+  ReferencedAcademicSectionValidator,
+} from '../validators/academic-period';
 
 
 @EntityRepository(AcademicPeriod)
 export default class AcademicPeriodService extends EntityService<AcademicPeriod, AcademicPeriodData> {
+  constructor(manager: EntityManager) {
+    super(manager);
+    this.prevalidators.push(new ParentAcademicPeriodValidator(this.manager));
+    this.validators.push(new ReferencedAcademicSectionValidator(this.manager));
+    this.validators.push(new DateRangeValidator(this.manager));
+  }
+
   /**
    * Creates a AcademicPeriod object from provided arguments and persists the object to storage.
    */
@@ -24,7 +36,7 @@ export default class AcademicPeriodService extends EntityService<AcademicPeriod,
       .findOne(periodId, {relations: ['parent']});
 
     if (!period) {
-      throw new ValidationError(
+      throw new YupError(
         `Academic period not found for ${periodId}`, values, 'periodId'
       );
     }
@@ -57,91 +69,36 @@ export default class AcademicPeriodService extends EntityService<AcademicPeriod,
   }
 
   private async validate(schema: ObjectSchema, values: AcademicPeriodData): Promise<AcademicPeriodData> {
-    let section: AcademicSection = null;
-    let parent: AcademicPeriod = null;
+    const errors: EntityError<AcademicPeriodData> = {};
 
-    const repository = this.getRepository();
-
-    // check for AcademicPeriod object if parentId is given
-    if (values.parentId) {
-      parent = await repository.findOne(values.parentId, {relations: ['parent', 'academicSection']});
-      if (!parent) {
-        throw new ValidationError(`Parent academic period not found: ${values.parentId}`, values, 'parentId');
-      }
-
-      if (!values.schoolId && !parent.academicSection) {
-        throw new ValidationError(
-          `School not found for parent with id '${values.parentId}'`,
-          values, 'parentId'
-        );
-      }
-
-      section = parent.academicSection;
-      values.schoolId = parent.academicSection.id;
-    }
-
-    // perform schema validation
-    const data: AcademicPeriodData = schema.validateSync(values);
-
-    // check for School object if schoolId is given
-    if (data.schoolId && !section) {
-      const schoolService = this.manager.connection.findEntityServiceFor(AcademicSection);
-      section = await schoolService.findByIdent(data.schoolId);
-      if (!section) {
-        throw new ValidationError(`School not found: ${data.schoolId}`, data, 'schoolId');
+    // perform pre-validations (needs to be synchronous)
+    for (const validator of this.prevalidators) {
+      values = await validator.check(values, errors);
+      if (!values && errors) {
+        throw new ValidationError(errors);
       }
     }
 
-    // ensure associated school is an institution i.e. has not parent school
-    if (section.parent) {
-      throw new ValidationError(
-        'Academic periods can only be created for top level schools', data, 'schoolId'
-      );
-    }
+    // perform schema validation & other post validations
+    return schema.validate(values)
+      .then(data => {
+        const promises = [];
+        this.validators.forEach(validator => (
+          promises.push(validator.check(data, errors))
+        ));
 
-    // validate date range
-    if (data.dateBegin && !data.dateEnd) {
-      throw new ValidationError('dateEnd expected if dateBegin provided', data, 'dateEnd');
-    } else if (!data.dateBegin && data.dateEnd) {
-      throw new ValidationError('dateBegin expected if dateEnd provided', data, 'dateBegin');
-    } else if (data.dateBegin && data.dateEnd) {
-      if (moment(data.dateBegin).isAfter(data.dateEnd)) {
-        throw new ValidationError('dateBegin cannot be later than dateEnd', data, 'dateBegin');
-      }
-
-      if (parent) {
-        if (parent.dateBegin && parent.dateEnd) {
-          if (moment(data.dateBegin).isBefore(parent.dateBegin)) {
-            throw new ValidationError('dateBegin cannot come before parent dateBegin', data, 'dateBegin');
-          } else if (moment(data.dateEnd).isAfter(parent.dateEnd)) {
-            throw new ValidationError('dateEnd cannot come after parent dateEnd', data, 'dateEnd');
+        return Promise.all(promises).then(_ => {
+          if (Object.keys(errors).length > 0) {
+            throw new ValidationError(errors);
           }
+          return data;
+        });
+      })
+      .catch(err => {
+        if (err.path) {
+          err = new ValidationError({[err.path]: err.errors});
         }
-
-        // ensure date range doesn't overlap date range for periods of same level
-        const findOption = {where: {parent: {id: parent.id}}};
-        const periods = await repository.find(findOption);
-        periods.forEach(p => this.validateNoDateOverlap(data, p));
-      }
-    }
-
-    data.parent = parent;
-    data.academicSection = section;
-    return data;
+        throw err;
+      });
   }
-
-  private validateNoDateOverlap(data: AcademicPeriodData, other: AcademicPeriod) {
-    if (data.dateBegin && data.dateEnd && other && other.dateBegin && other.dateEnd) {
-      if (moment(data.dateBegin).isBetween(other.dateBegin, other.dateEnd)) {
-        throw new ValidationError(
-          'dateBegin overlaps date range of another academic period', data, 'dateBegin'
-        );
-      } else if (moment(data.dateEnd).isBetween(other.dateBegin, other.dateEnd)) {
-        throw new ValidationError(
-          'dateEnd overlaps date range of another academic period', data, 'dateEnd'
-        );
-      }
-    }
-  }
-
 }

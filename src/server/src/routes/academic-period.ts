@@ -2,24 +2,13 @@ import { Router } from 'express';
 import { AcademicPeriodController } from '../controllers';
 
 
-class AcademicPeriodRoutes {
-  router: Router = Router();
-  private controller = new AcademicPeriodController();
+const controller = new AcademicPeriodController();
+const router: Router = Router();
+router
+  .get('/', controller.listAcademicPeriods)
+  .get('/:ident', controller.getAcademicPeriod)
+  .post('/', controller.createAcademicPeriod)
+  .put('/:ident', controller.updateAcademicPeriod)
+  .patch('/:ident', controller.updateAcademicPeriod);
 
-  constructor() {
-    this.config();
-  }
-
-  private config() {
-    this.router.get('/', this.controller.listAcademicPeriods);
-    this.router.get('/:ident', this.controller.getAcademicPeriod);
-
-    this.router.post('/', this.controller.createAcademicPeriod);
-    this.router.put('/:ident', this.controller.updateAcademicPeriod);
-    this.router.patch('/:ident', this.controller.updateAcademicPeriod);
-    return this.router;
-  }
-}
-
-const routes = new AcademicPeriodRoutes().router;
-export default routes;
+export default router;
