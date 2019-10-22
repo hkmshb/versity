@@ -34,8 +34,8 @@ describe('# academic-period controller tests', () => {
       .createAndSave({name: 'Baobab University', code: 'baobab-university', nickname: 'BU'})
       .then(async inst => {
         institution = inst;
-        await periodService.createAndSave({name: '2016/2017', code: '2016-2017', schoolId: institution.id});
-        await periodService.createAndSave({name: '2017/2018', code: '2017-2018', schoolId: institution.id});
+        await periodService.createAndSave({name: '2016/2017', code: '2016-2017', academicSectionId: institution.id});
+        await periodService.createAndSave({name: '2017/2018', code: '2017-2018', academicSectionId: institution.id});
       });
   });
 
@@ -83,7 +83,7 @@ describe('# academic-period controller tests', () => {
 
   itParam('can create from valid arguments via post: ${value.code}',
           validAcademicPeriodArgs, (done, data) => {
-    data.schoolId = institution.id;
+    data.academicSectionId = institution.id;
     chai.request(server.app)
         .post(endpoint)
         .send(data)

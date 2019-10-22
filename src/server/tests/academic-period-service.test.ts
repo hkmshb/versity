@@ -35,6 +35,7 @@ describe('# academic period service & data validation tests', async () => {
         })
         .then(sch => {
           school = sch;
+          return school;
         });
       });
   });
@@ -50,9 +51,9 @@ describe('# academic period service & data validation tests', async () => {
       .createAndSave(data)
       .then(_ => { throw new Error('execution should not get here!'); })
       .catch(err => {
-        expect(err.name).to.equal('ValidationError');
+        expect(err.name).to.equal('VersityValidationError');
         expect(err.errors).to.not.be.empty;
-        expect(err.path).to.equal('schoolId');
+        expect(err.errors).has.property('academicSectionId');
       });
   });
 
@@ -62,7 +63,7 @@ describe('# academic period service & data validation tests', async () => {
     const data = {
       name: '2018/2019-II',
       code: '2018-2019-II',
-      schoolId: school.id,
+      academicSectionId: school.id,
       dateBegin: moment().format(DATE_FMT),
       dateEnd: moment().add(1, 'd').format(DATE_FMT)
     };
@@ -71,9 +72,9 @@ describe('# academic period service & data validation tests', async () => {
       .createAndSave(data)
       .then(_ => { throw new Error('execution should not get here!'); })
       .catch(err => {
-        expect(err.name).to.equal('ValidationError');
+        expect(err.name).to.equal('VersityValidationError');
         expect(err.errors).to.not.be.empty;
-        expect(err.path).to.equal('schoolId');
+        expect(err.errors).has.property('academicSectionId');
       });
   });
 
@@ -87,16 +88,16 @@ describe('# academic period service & data validation tests', async () => {
     const data = {
       name: '2018/2019-III',
       code: '2018-2019-III',
-      schoolId: institution.id,
+      academicSectionId: institution.id,
       [entry.name]: entry.value
     };
     return periodService
       .createAndSave(data)
       .then(_ => { throw new Error('execution should not get here'); })
       .catch(err => {
-        expect(err.name).to.equal('ValidationError');
+        expect(err.name).to.equal('VersityValidationError');
         expect(err.errors).to.not.be.empty;
-        expect(err.path).to.equal(entry.missing);
+        expect(err.errors).has.property(entry.missing);
       });
   });
 
@@ -104,7 +105,7 @@ describe('# academic period service & data validation tests', async () => {
     const data = {
       name: '2018/2019-IV',
       code: '2018-2019-IV',
-      schoolId: institution.id,
+      academicSectionId: institution.id,
       dateBegin: moment().add(7, 'd').format(DATE_FMT),
       dateEnd: moment().format(DATE_FMT)
     };
@@ -112,9 +113,9 @@ describe('# academic period service & data validation tests', async () => {
       .createAndSave(data)
       .then(_ => { throw new Error('execution should not get here'); })
       .catch(err => {
-        expect(err.name).to.equal('ValidationError');
+        expect(err.name).to.equal('VersityValidationError');
         expect(err.errors).to.not.be.empty;
-        expect(err.path).to.equal('dateBegin');
+        expect(err.errors).has.property('dateBegin');
       });
   });
 
@@ -122,7 +123,7 @@ describe('# academic period service & data validation tests', async () => {
     const sessionData = {
       name: '2018/2019-V',
       code: '2018-2019-V',
-      schoolId: institution.id,
+      academicSectionId: institution.id,
       dateBegin: moment().format(DATE_FMT),
       dateEnd: moment().add(30, 'd').format(DATE_FMT)
     };
@@ -140,11 +141,11 @@ describe('# academic period service & data validation tests', async () => {
 
     return periodService
       .createAndSave(semesterData)
-      .then(_ => { throw new Error('execution should not get here'); })
+      .then(_ => { throw new Error('execution should not get here.'); })
       .catch(err => {
-        expect(err.name).to.equal('ValidationError');
+        expect(err.name).to.equal('VersityValidationError');
         expect(err.errors).to.not.be.empty;
-        expect(err.path).to.equal('dateBegin');
+        expect(err.errors).has.property('dateBegin');
       });
   });
 
@@ -153,7 +154,7 @@ describe('# academic period service & data validation tests', async () => {
     const sessiondata = {
       name: '2018/2019-VI',
       code: '2018-2019-VI',
-      schoolId: institution.id
+      academicSectionId: institution.id
     };
     const session = await periodService.createAndSave(sessiondata);
     expect(session.id).to.be.greaterThan(0);
@@ -176,13 +177,14 @@ describe('# academic period service & data validation tests', async () => {
       dateBegin: moment().add(8, 'd').format(DATE_FMT),
       dateEnd: moment().add(20, 'd').format(DATE_FMT)
     };
+
     return periodService
       .createAndSave(semesterdata2)
       .then(_ => { throw new Error('execution should not get here'); })
       .catch(err => {
-        expect(err.name).to.equal('ValidationError');
+        expect(err.name).to.equal('VersityValidationError');
         expect(err.errors).to.not.be.empty;
-        expect(err.path).to.equal('dateBegin');
+        expect(err.errors).has.property('dateBegin');
       });
   });
 
@@ -190,7 +192,7 @@ describe('# academic period service & data validation tests', async () => {
     const data = {
       name: '2018/2019-#X1',
       code: '2018-2019-#X1',
-      schoolId: institution.id,
+      academicSectionId: institution.id,
       parentId: 'unknown-id'
     };
 
@@ -198,9 +200,9 @@ describe('# academic period service & data validation tests', async () => {
       .createAndSave(data)
       .then(_ => { throw new Error('execution should not get here'); })
       .catch(err => {
-        expect(err.name).to.equal('ValidationError');
+        expect(err.name).to.equal('VersityValidationError');
         expect(err.errors).to.not.be.empty;
-        expect(err.path).to.equal('parentId');
+        expect(err.errors).has.property('parentId');
       });
   });
 
@@ -208,18 +210,19 @@ describe('# academic period service & data validation tests', async () => {
     const sessiondata = {
       name: '2018/2019-#V1',
       code: '2018-2019-#V1',
-      schoolId: institution.id
+      academicSectionId: institution.id
     };
     return periodService
       .createAndSave(sessiondata)
-      .then(period => expect(period.id).to.be.greaterThan(0));
+      .then(period => expect(period.id).to.be.greaterThan(0))
+      .catch(err => expect(err).to.be.null);
   });
 
   it('can create session and child semester all w/o date range', async () => {
     const sessiondata = {
       name: '2018/2019-#V2',
       code: '2018-2019-#V2',
-      schoolId: institution.id
+      academicSectionId: institution.id
     };
     return periodService
       .createAndSave(sessiondata)
@@ -239,7 +242,7 @@ describe('# academic period service & data validation tests', async () => {
     const sessiondata = {
       name: '2018/2019-#V3',
       code: '2018-2019-#V3',
-      schoolId: institution.id
+      academicSectionId: institution.id
     };
     return periodService
       .createAndSave(sessiondata)

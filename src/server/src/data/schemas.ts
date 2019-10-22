@@ -16,15 +16,14 @@ export const RequiredIdSchema = yup.object().shape({
 
 export interface AcademicPeriodData extends Partial<AcademicPeriod> {
   parentId?: number | string;
-  schoolId?: number | string;
+  academicSectionId?: number | string;
 }
-
 
 export const AcademicPeriodSchema = yup.object().shape({
   id: yup.number(),
   uuid: yup.string(),
   parentId: yup.string(),
-  schoolId: yup.string().required(),
+  academicSectionId: yup.string().required(),
   name: yup.string().required()
     .min(7).max(50),
   dateBegin: yup.date(),
