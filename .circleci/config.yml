@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  test:
+  tests:
     docker:
       - image: circleci/node:dubnium-stretch
     environment:
@@ -9,10 +9,9 @@ jobs:
       - checkout
       - run:
           command: |
-            rm -rf ./versity.db3
-            make install && make test
+            make install lint test
 workflows:
   version: 2
   main:
     jobs:
-      - test
+      - tests
