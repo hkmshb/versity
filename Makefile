@@ -1,3 +1,5 @@
+SHELL := /bin/bash # Use bash syntax
+
 # vars
 CLIENT_DIR = --cwd ./src/client
 SERVER_DIR = --cwd ./src/server
