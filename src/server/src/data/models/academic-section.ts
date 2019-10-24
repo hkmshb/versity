@@ -7,7 +7,7 @@ import { BaseEntity } from './entity';
 @Entity()
 @Unique(['parent', 'code'])
 @Unique(['parent', 'name'])
-export default class School extends BaseEntity {
+export default class AcademicSection extends BaseEntity {
 
   @Column({ type: 'varchar', nullable: false })
   name: string;
@@ -27,17 +27,17 @@ export default class School extends BaseEntity {
   @Column({ name: 'addr_state', type: 'varchar', length: 50, nullable: true })
   addrState: string;
 
-  @ManyToOne(type => School, school => school.children)
+  @ManyToOne(type => AcademicSection, section => section.children)
   @JoinColumn({ name: 'parent_id' })
-  parent: School;
+  parent: AcademicSection;
 
-  @OneToMany(type => School, school => school.parent)
-  children: School[];
+  @OneToMany(type => AcademicSection, section => section.parent)
+  children: AcademicSection[];
 
   @OneToMany(type => Department, department => department.school)
   departments: Department[];
 
-  @OneToMany(type => AcademicPeriod, period => period.school)
+  @OneToMany(type => AcademicPeriod, period => period.academicSection)
   academicPeriods: AcademicPeriod[];
 
 }

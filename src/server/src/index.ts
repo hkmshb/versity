@@ -4,7 +4,7 @@ import * as conf from './config';
 import { logger } from './utils';
 
 
-const appUrl = conf.VERSITY_URL;
+const appUrl = conf.API_BASEURL;
 
 new VersityServer().ready((app: Application) => {
   app.listen(

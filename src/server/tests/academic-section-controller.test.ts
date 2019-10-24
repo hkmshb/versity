@@ -12,7 +12,7 @@ chai.use(chaiHttp);
 const expect = chai.expect;
 
 
-describe('# school controller tests', () => {
+describe('# academic section controller tests', () => {
   let server: VersityServer;
   let loader: FixtureLoader;
 
@@ -22,7 +22,7 @@ describe('# school controller tests', () => {
     await loadValidEntityFixtures(loader);
   });
 
-  it('should retrieve school listing via get schools', done => {
+  it('should retrieve academic section listing via get schools', done => {
     chai.request(server.app)
         .get('/schools/')
         .end((err, res) => {
@@ -32,7 +32,7 @@ describe('# school controller tests', () => {
         });
   });
 
-  it('should retrieve school by code and id via get schools', done => {
+  it('should retrieve academic section by code and id via get schools', done => {
     const code = 'baobab-school-of-medicine';
     chai.request(server.app)
         .get(`/schools/${code}`)
@@ -44,7 +44,7 @@ describe('# school controller tests', () => {
         });
   });
 
-  it('fails with decent message when retrieving school by code if no school found', done => {
+  it('fails with decent message when retrieving academic section by code if no academic section found', done => {
     const code = 'baobao-list-tic-record';
     chai.request(server.app)
         .get(`/schools/${code}`)
@@ -64,7 +64,7 @@ describe('# school controller tests', () => {
     },
   ];
 
-  itParam('can create school from valid arguments via post: ${value.code}',
+  itParam('can create academic section from valid arguments via post: ${value.code}',
           validSchoolArgs, (done, data) => {
     chai.request(server.app)
         .post('/schools/')
@@ -78,24 +78,25 @@ describe('# school controller tests', () => {
   });
 
   const schoolViolatingUniqueConstraint = [
-    {ident: 'marula-university', name: 'Imberbe University'},
-    {ident: 'marula-university', code: 'kigelia-university-of-technology'},
+    {ident: 'marula-university', key: 'name', value: 'Imberbe University'},
+    {ident: 'marula-university', key: 'code', value: 'kigelia-university-of-technology'},
   ];
 
-  itParam('should fail update via post with args violating unique constraint',
+  itParam('should fail update via post with args violating unique constraint: ${value.key}',
           schoolViolatingUniqueConstraint, data => {
+    const values = {ident: data.ident, [data.key]: data.value};
     chai.request(server.app)
-        .put(`/schools/${data.ident}`)
-        .send(data)
+        .put(`/schools/${values.ident}`)
+        .send(values)
         .end((err, res) => {
           expect(res).has.status(400);
           expect(res.body).to.have.property('errors');
         });
   });
 
-  it('can update existing school with valid partial args via patch', async () => {
+  it('can update existing academic section with valid partial args via patch', async () => {
     const data = {ident: 'marula-university', name: 'Marula University (Updated)'};
-    const service = loader.conn.findEntityServiceFor(models.School);
+    const service = loader.conn.findEntityServiceFor(models.AcademicSection);
     const school = await service.findByIdent(data.ident);
     expect(school.code).to.equal(data.ident);
 

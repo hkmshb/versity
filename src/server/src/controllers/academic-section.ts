@@ -1,35 +1,28 @@
 import { Request, Response } from 'express';
-import { ObjectType } from 'typeorm';
-import { Connection, getDbConnection, models } from '../data';
-import { EntityService } from '../data/types';
+import { models } from '../data';
+import { BaseController } from './types';
 
 
-export default class SchoolController {
+export default class AcademicSectionController extends BaseController {
 
   /**
-   * Returns a paginated list of schools.
+   * Returns a paginated list of sections.
    */
   listSchools = async (req: Request, res: Response): Promise<Response> => {
-    return this.findService(models.School)
-      .then(service => {
-        const schools = service.getRepository().find();
-        return schools;
-      })
-      .then(schools => {
-        return res.status(200).json(schools);
-      });
+    return this.findService(models.AcademicSection)
+      .then(service => service.getRepository().find())
+      .then(sections => res.status(200).json(sections));
   }
 
   getSchool = async (req: Request, res: Response): Promise<Response> => {
-    return this.findService(models.School)
+    return this.findService(models.AcademicSection)
       .then(service => service.findByIdent(req.params.ident))
-      .then(school => res.status(200).json(school))
+      .then(section => res.status(200).json(section))
       .catch(err => {
         const errmsg = {errors: {ident: err.message}};
         if (err.message.includes('not found')) {
           return res.status(404).json(errmsg);
         }
-
         return res.status(400).json(errmsg);
       });
   }
@@ -38,10 +31,10 @@ export default class SchoolController {
    * Creates a School from provided arguments which is then returned as part of a response.
    */
   createSchool = async (req: Request, res: Response): Promise<Response> => {
-    return this.findService(models.School)
+    return this.findService(models.AcademicSection)
       .then(service => service.createAndSave({...req.body}))
-      .then(school => {
-        return res.status(201).json(school);
+      .then(section => {
+        return res.status(201).json(section);
       })
       .catch(err => {
         const errmsg = {errors: err.message};
@@ -54,13 +47,13 @@ export default class SchoolController {
   }
 
   updateSchool = async (req: Request, res: Response): Promise<Response> => {
-    const service = await this.findService(models.School);
+    const service = await this.findService(models.AcademicSection);
     return service.findByIdent(req.params.ident)
-      .then(school => {
-        const schoolUpdate = {...school, ...req.body};
-        return service.updateAndSave(schoolUpdate);
+      .then(section => {
+        const updateData = {...section, ...req.body};
+        return service.updateAndSave(updateData);
       })
-      .then(school => res.status(200).json(school))
+      .then(section => res.status(200).json(section))
       .catch(err => {
         if (err.message.includes('not found')) {
           const errnotfound = {errors: {ident: err.message}};
@@ -70,12 +63,5 @@ export default class SchoolController {
         const errmsg = {errors: {msg: err.message}};
         return res.status(400).json(errmsg);
       });
-  }
-
-  findService = <T>(entity: ObjectType<T>): Promise<EntityService<T, any>> => {
-    return getDbConnection()
-      .then(conn => (
-        conn.findEntityServiceFor(entity)
-      ));
   }
 }

@@ -1,7 +1,7 @@
 /**
  * @file Defines types and constants.
  */
-import { URL } from 'url';
+import { parse as urlparse, Url, URL } from 'url';
 
 
 /**
@@ -26,5 +26,5 @@ const getEnv = (name: string, defaultValue: string = null): string => {
 
 export const LOG_LEVEL = getEnv('LOG_LEVEL', (IS_PROD_ENV ? 'info' : 'debug'));
 
-export const API_BASEURL: URL = new URL(getEnv('VERSITY_API_BASEURL'));
-export const DATABASE_URL: URL = new URL(getEnv('VERSITY_DATABASE_URL'))
+export const API_BASEURL: Url = urlparse(getEnv('VERSITY_API_BASEURL', ''));
+export const DATABASE_URL: URL = new URL(getEnv('VERSITY_DATABASE_URL'));
