@@ -44,7 +44,17 @@ export interface IValidator<T, U extends Partial<T>> {
 
 export class ValidationError extends Error {
   constructor(public errors: string | {[key: string]: any}) {
-    super();
+    super(JSON.stringify(errors));
     this.name = 'VersityValidationError';
+  }
+}
+
+export class DataImportError extends Error {
+  constructor(
+    public errors: string | {[key: string]: any},
+    public lineno: number = -1
+  ) {
+    super(JSON.stringify(errors));
+    this.name = 'DataImportError';
   }
 }

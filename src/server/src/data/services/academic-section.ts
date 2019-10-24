@@ -1,8 +1,13 @@
+import fs from 'fs';
+import _ from 'lodash';
 import { EntityRepository, FindOneOptions, Repository } from 'typeorm';
+import xlsx from 'xlsx';
 import { ObjectSchema, ValidationError } from 'yup';
+import { Dictionary } from '../../types';
+import { logger } from '../../utils';
 import { AcademicSection } from '../models';
 import { AcademicSectionData, AcademicSectionSchema, RequiredIdSchema } from '../schemas';
-import { EntityService } from '../types';
+import { DataImportError, EntityService } from '../types';
 
 
 @EntityRepository(AcademicSection)
@@ -60,6 +65,65 @@ export default class AcademicSectionService extends EntityService<AcademicSectio
     return this.getRepositoryFor(AcademicSection);
   }
 
+  async importData(filepath: string): Promise<number> {
+    logger.debug('starting academic data import...');
+    if (!fs.existsSync(filepath)) {
+      throw new DataImportError(`File not found: ${filepath}`);
+    }
+
+    let rows: AcademicSectionData[] = [];
+    try {
+      logger.debug('reading data file ...');
+      const workbook = xlsx.readFile(filepath);
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      rows = xlsx.utils.sheet_to_json(sheet);
+    } catch (err) {
+      const errorMessage = `File processing failed: ${err}`;
+      logger.error(errorMessage);
+      throw new DataImportError(errorMessage);
+    }
+
+    logger.debug('starting a transaction for save records ...');
+    return this.manager.transaction(async ts => {
+      const repository = ts.getRepository(AcademicSection);
+
+      let index = 0;
+      for (const row of rows) {
+        index += 1;
+
+        if (row.parentId && _.isNaN(_.parseInt(row.parentId))) {
+          logger.debug(`resolve non-numberic parentId of ${row.parentId} found at ${index}`);
+          const parent = await repository.findOne({
+            where: [ {code: row.parentId}, {nickname: row.parentId} ]
+          });
+
+          if (!parent) {
+            const errorMessage = `Unable to resolve parentId: ${row.parentId}`;
+            logger.debug(errorMessage);
+            throw new DataImportError({ parentId: errorMessage}, index);
+          }
+          row.parentId = parent.id;
+          row.parent = parent;
+        }
+
+        try {
+          const data = await this.validate(AcademicSectionSchema, row);
+          const instance = ts.create(AcademicSection, data);
+          await ts.save(instance);
+        } catch (err) {
+          logger.error(err.toString());
+          if (err.path) {
+            throw new DataImportError({[err.path]: err.errors}, index);
+          }
+          throw new DataImportError(err.errors, index);
+        }
+      }
+
+      return rows.length;
+    });
+  }
+
   private async validate(schema: ObjectSchema, values: AcademicSectionData): Promise<AcademicSectionData> {
     // perform schema validation
     const data: AcademicSectionData = schema.validateSync(values);
@@ -79,14 +143,25 @@ export default class AcademicSectionService extends EntityService<AcademicSectio
     const found = await repository
       .createQueryBuilder(AcademicSection.name)
       .where(whereCondition, data)
-      .getOne();
+      .getMany()
+      .then(sections => {
+        if (!data.parentId) {
+          return sections[0];
+        }
+
+        return sections.filter(
+          s => s.parent && s.parent.id === data.parentId
+        )[0];
+      });
 
     if (found) {
       const fieldName = (found.name === data.name
           ? 'name' : (found.code === data.code
             ? 'code' : 'nickname'));
 
-      throw new ValidationError(`${fieldName} already in use`, data, `${fieldName}`);
+      throw new ValidationError(
+        `${fieldName} already in use: ${data.name}`, data, `${fieldName}`
+      );
     }
 
     // check parent object if parentId is given
