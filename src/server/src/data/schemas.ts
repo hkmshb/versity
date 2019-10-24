@@ -1,10 +1,15 @@
 import * as yup from 'yup';
-import { School } from './models';
+import { Department, School } from './models';
 
 
 // tslint:disable:interface-name
 export interface SchoolData extends Partial<School> {
   parentId?: number;
+}
+
+
+export interface DepartmentData extends Partial<Department> {
+  schoolId?: number;
 }
 
 
@@ -26,4 +31,12 @@ export const SchoolSchema = yup.object().shape({
   addrStreet: yup.string().nullable(),
   addrTown: yup.string().nullable(),
   addrState: yup.string().nullable()
+});
+
+
+export const DepartmentSchema = yup.object().shape({
+  id: yup.number(),
+  uuid: yup.string(),
+  schoolId: yup.number(),
+  name: yup.string().required().min(4)
 });
