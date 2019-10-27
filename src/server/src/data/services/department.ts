@@ -1,8 +1,10 @@
 import { EntityRepository, FindOneOptions, Repository } from 'typeorm';
-import { ObjectSchema, ValidationError } from 'yup';
+import { ObjectSchema, ValidationError, number } from 'yup';
 import { Department, School } from '../models';
 import { DepartmentData, DepartmentSchema, RequiredIdSchema } from '../schemas';
 import { EntityService } from '../types';
+import { parse } from 'papaparse';
+import { readFileSync } from 'fs';
 
 
 @EntityRepository(Department)
@@ -33,6 +35,28 @@ export default class DepartmentService extends EntityService<Department, Departm
     const data = await this.validate(DepartmentSchema, values);
     const instance = this.manager.create(Department, {...department, ...data});
     return this.manager.save(instance);
+  }
+
+  /**
+   * Imports departments from file
+  */
+  async importRecords(filepath: string): Promise<number> {
+    const file = readFileSync(filepath, 'utf8');
+    let count = 0;
+    let results = parse(file, {header: true}).data;
+    await this.manager.transaction(async transactionalEntityManager => {
+      results.forEach(async (department:Department, lineNumber:number, array: any[]) => {
+        const data = await this.validate(DepartmentSchema, department);
+        if(!data){
+          throw new Error(`Invalid department data on line ${lineNumber + 1}`);
+        }
+        const instance = transactionalEntityManager.create(Department, data);
+        transactionalEntityManager.save(instance);
+        count++;
+      });
+    });
+
+    return count;
   }
 
   /**
