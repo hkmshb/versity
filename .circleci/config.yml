@@ -1,0 +1,17 @@
+version: 2
+jobs:
+  tests:
+    docker:
+      - image: circleci/node:dubnium-stretch
+    environment:
+      VERSITY_DATABASE_URL: sqlite://./versity.db3
+    steps:
+      - checkout
+      - run:
+          command: |
+            make install lint test
+workflows:
+  version: 2
+  main:
+    jobs:
+      - tests
