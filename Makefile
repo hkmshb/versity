@@ -26,30 +26,31 @@ install:
 	yarn ${SERVER_DIR} install
 
 client:
-	source .env && \
+	@source .env && \
 	PORT=${WEB_PORT} yarn ${CLIENT_DIR} start
 
 server:
-	source .env && \
+	@source .env && \
 	yarn ${SERVER_DIR} start
 
 lint-client:
-	set -e; \
+	@set -e; \
 	yarn ${CLIENT_DIR} lint
 
 lint-server:
-	set -e; \
+	@set -e; \
 	yarn ${SERVER_DIR} lint;
 
 lint: lint-client lint-server
 
 test-client:
-	set -e; \
+	@set -e; \
 	yarn ${CLIENT_DIR} test
 
 test-server:
 	@set -e; \
 	[[ -f .env.test ]] && source .env.test; \
+	export LOG_LEVEL=silent; \
 	yarn ${SERVER_DIR} test
 
 test-file:
@@ -64,5 +65,5 @@ pre-commit-client: lint-client test-client
 pre-commit-server: lint-server test-server
 
 push: pre-commit
-	set -e; \
+	@set -e; \
 	git push -u origin
