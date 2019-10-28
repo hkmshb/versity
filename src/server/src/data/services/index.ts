@@ -1,8 +1,10 @@
-import SchoolService from './school';
+import AcademicPeriodService from './academic-period';
+import AcademicSectionService from './academic-section';
 import DepartmentService from './department';
 
 
 export {
-  SchoolService,
+  AcademicPeriodService,
+  AcademicSectionService,
   DepartmentService
 };

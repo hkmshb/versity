@@ -32,50 +32,50 @@ describe('# entity tests', async () => {
   });
 
   // ======================================================================
-  // School Entity Tests
+  // AcademicSection Entity Tests
   // ======================================================================
-  it('should verify school count matches loaded fixture entries', async () => {
+  it('should verify academic section count matches loaded fixture entries', async () => {
     return (
       loader.conn
-        .getRepository('School')
+        .getRepository('AcademicSection')
         .count()
         .then(value => expect(value).to.equal(7))
     );
   });
 
-  it('should verify school parent relationship', async () => {
+  it('should verify academic section parent relationship', async () => {
     return (
       loader.conn
-        .getRepository(models.School)
+        .getRepository(models.AcademicSection)
         .findOne({nickname: 'KUT-SOENG'}, {relations: ['parent']})
-        .then(school => {
-          expect(school).to.not.be.undefined;
-          expect(school.parent.nickname).to.equal('KUT');
+        .then(section => {
+          expect(section).to.not.be.undefined;
+          expect(section.parent.nickname).to.equal('KUT');
         })
     );
   });
 
-  it('should verify school children relationship', async () => {
+  it('should verify academic section children relationship', async () => {
     return (
       loader.conn
-        .getRepository(models.School)
+        .getRepository(models.AcademicSection)
         .findOne({nickname: 'KUT'}, {relations: ['parent', 'children']})
-        .then(school => {
-          expect(school).to.not.be.undefined;
-          expect(school.parent).to.be.null;
-          expect(school.children.length).to.equal(2);
+        .then(section => {
+          expect(section).to.not.be.undefined;
+          expect(section.parent).to.be.null;
+          expect(section.children.length).to.equal(2);
         })
     );
   });
 
-  it('should verify school to academic period relationship', async () => {
+  it('should verify academic section to academic period relationship', async () => {
     return(
       loader.conn
-        .getRepository(models.School)
+        .getRepository(models.AcademicSection)
         .findOne({nickname: 'BSM'}, {relations: ['academicPeriods']})
-        .then(school => {
-          expect(school).to.not.be.undefined;
-          expect(school.academicPeriods.length).to.equal(1);
+        .then(section => {
+          expect(section).to.not.be.undefined;
+          expect(section.academicPeriods.length).to.equal(1);
         })
     );
   });
@@ -84,11 +84,11 @@ describe('# entity tests', async () => {
     return (
       loader.conn
         .getRepository(models.AcademicPeriod)
-        .find({relations: ['school']})
+        .find({relations: ['academicSection']})
         .then(periods => {
           expect(periods.length).to.equal(5);
           periods.filter(p => p.parent ===  null).forEach(p => {
-            expect(p.school).to.not.be.null;
+            expect(p.academicSection).to.not.be.null;
           });
         })
     );

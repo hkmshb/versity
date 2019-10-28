@@ -9,6 +9,7 @@
     "watch": "tsc --watch",
     "start": "nodemon --watch 'src/**/*.ts' --exec ts-node 'src/index.ts'",
     "test": "NODE_ENV=test LOG_LEVEL=silent mocha -r ts-node/register tests/**/*.test.ts",
+    "test-file": "NODE_ENV=test LOG_LEVEL=silent mocha -r ts-node/register",
     "lint": "tslint --fix -c tslint.json 'src/**/*.ts' 'tests/**/*.test.ts'"
   },
   "dependencies": {
@@ -16,6 +17,7 @@
     "express": "^4.17.1",
     "express-pino-logger": "^4.0.0",
     "papaparse": "^5.1.0",
+    "moment": "^2.24.0",
     "reflect-metadata": "^0.1.13",
     "typeorm": "^0.2.18",
     "yup": "^0.27.0"

@@ -1,16 +1,16 @@
 import { Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import AcademicSection from './academic-section';
 import NamedEntity from './entity';
 import Lecturer from './lecturer';
 import Programme from './programme';
-import School from './school';
 
 
 @Entity()
 export default class Department extends NamedEntity {
 
-  @ManyToOne(type => School, school => school.departments)
+  @ManyToOne(type => AcademicSection, section => section.departments)
   @JoinColumn({ name: 'school_id' })
-  school: School;
+  school: AcademicSection;
 
   @OneToMany(type => Programme, programme => programme.department)
   programmes: Programme[];

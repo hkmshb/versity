@@ -1,6 +1,6 @@
 import { EntityRepository, FindOneOptions, Repository } from 'typeorm';
 import { ObjectSchema, ValidationError, number } from 'yup';
-import { Department, School } from '../models';
+import { Department, AcademicSection } from '../models';
 import { DepartmentData, DepartmentSchema, RequiredIdSchema } from '../schemas';
 import { EntityService } from '../types';
 import { parse } from 'papaparse';
@@ -42,9 +42,10 @@ export default class DepartmentService extends EntityService<Department, Departm
   */
   async importRecords(filepath: string): Promise<number> {
     const file = readFileSync(filepath, 'utf8');
-    let count = 0;
+    //let count = 0;
     let results = parse(file, {header: true}).data;
-    await this.manager.transaction(async transactionalEntityManager => {
+    return await this.manager.transaction<number>(async transactionalEntityManager => {
+      let count = 0
       results.forEach(async (department:Department, lineNumber:number, array: any[]) => {
         const data = await this.validate(DepartmentSchema, department);
         if(!data){
@@ -54,9 +55,8 @@ export default class DepartmentService extends EntityService<Department, Departm
         transactionalEntityManager.save(instance);
         count++;
       });
+      return count;
     });
-
-    return count;
   }
 
   /**
@@ -100,12 +100,12 @@ export default class DepartmentService extends EntityService<Department, Departm
       .getOne();
 
     if (found) {
-      throw new ValidationError(`name already in use`, data, `name`);
+      throw new ValidationError(`name ${values["name"]} already in use`, data, `name`);
     }
 
     // check school if schoolId is given
     if (data.schoolId) {
-      const schoolRepository = this.getRepositoryFor(School);
+      const schoolRepository = this.getRepositoryFor(AcademicSection);
       const school = await schoolRepository.findOne(data.schoolId, {relations: ['parent']});
       if (!school) {
         throw new ValidationError(`Parent school for department not found: ${data.schoolId}`, data, 'schoolId');
