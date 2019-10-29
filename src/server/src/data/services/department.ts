@@ -1,10 +1,10 @@
+import { readFileSync } from 'fs';
+import { parse } from 'papaparse';
 import { EntityRepository, FindOneOptions, Repository } from 'typeorm';
-import { ObjectSchema, ValidationError, number } from 'yup';
-import { Department, AcademicSection } from '../models';
+import { number, ObjectSchema, ValidationError } from 'yup';
+import { AcademicSection, Department } from '../models';
 import { DepartmentData, DepartmentSchema, RequiredIdSchema } from '../schemas';
 import { EntityService } from '../types';
-import { parse } from 'papaparse';
-import { readFileSync } from 'fs';
 
 
 @EntityRepository(Department)
@@ -39,16 +39,16 @@ export default class DepartmentService extends EntityService<Department, Departm
 
   /**
    * Imports departments from file
-  */
+   */
   async importRecords(filepath: string): Promise<number> {
     const file = readFileSync(filepath, 'utf8');
-    //let count = 0;
-    let results = parse(file, {header: true}).data;
+    // let count = 0;
+    const results = parse(file, {header: true}).data;
     return await this.manager.transaction<number>(async transactionalEntityManager => {
-      let count = 0
-      results.forEach(async (department:Department, lineNumber:number, array: any[]) => {
+      let count = 0;
+      results.forEach(async (department: Department, lineNumber: number, array: any[]) => {
         const data = await this.validate(DepartmentSchema, department);
-        if(!data){
+        if (!data) {
           throw new Error(`Invalid department data on line ${lineNumber + 1}`);
         }
         const instance = transactionalEntityManager.create(Department, data);
@@ -100,7 +100,7 @@ export default class DepartmentService extends EntityService<Department, Departm
       .getOne();
 
     if (found) {
-      throw new ValidationError(`name ${values["name"]} already in use`, data, `name`);
+      throw new ValidationError(`name ${values.name} already in use`, data, `name`);
     }
 
     // check school if schoolId is given

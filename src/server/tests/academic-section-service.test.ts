@@ -2,6 +2,7 @@
 import * as chai from 'chai';
 import * as mocha from 'mocha';
 import { itParam } from 'mocha-param';
+import path from 'path';
 import { Connection, models } from '../src/data';
 import { AcademicSection } from '../src/data/models';
 import { AcademicSectionService } from '../src/data/services';
@@ -11,7 +12,7 @@ import { getTestDbConnection } from './test-utils';
 const expect = chai.expect;
 
 
-describe('# school service & data validation tests', async () => {
+describe('# academic-section service & data validation tests', async () => {
   let conn: Connection;
 
   before(async () => {
@@ -70,7 +71,7 @@ describe('# school service & data validation tests', async () => {
       .then(_ => { throw new Error('Execution should not get here'); })
       .catch(err => {
         expect(err.name).to.equal('ValidationError');
-        expect(err.message).to.equal(`${entry.name} already in use`);
+        expect(err.message.startsWith(`${entry.name} already in use`)).to.be.true;
       });
   });
 
@@ -92,7 +93,7 @@ describe('# school service & data validation tests', async () => {
       .then(_ => { throw new Error('Execution should not get here'); })
       .catch(err => {
         expect(err.name).to.equal('ValidationError');
-        expect(err.message).to.equal('name already in use');
+        expect(err.message.startsWith('name already in use')).to.be.true;
       });
   });
 
@@ -149,6 +150,68 @@ describe('# school service & data validation tests', async () => {
       expect(err.name).to.equal('ValidationError');
       expect(err.message).to.equal('Academic section hierarchical relationships cannot exceed 1 level');
     });
+  });
+
+});
+
+describe('# academic-section service & data import', async () => {
+  let conn: Connection;
+  let service: AcademicSectionService;
+
+  before(async () => {
+    conn = await getTestDbConnection('test-section+import');
+    service = conn.getCustomRepository(AcademicSectionService);
+  });
+
+  it('import fails when file for processing is not found', () => {
+    const filepath = path.join(__dirname, 'fixtures/imaginary-no-existing-file.csv');
+    return service
+      .importData(filepath)
+      .then(_ => expect.fail('execution should not get here'))
+      .catch(err => {
+        expect(err.name).to.equal('DataImportError');
+        expect(err.errors.startsWith('File not found')).to.be.true;
+      });
+  });
+
+  it('import fails when file has rows violating unique constraint', () => {
+    const filepath = path.join(__dirname, 'fixtures/imports/records-with-duplicate-academic-session.csv');
+    return service
+      .importData(filepath)
+      .then(_ => expect.fail('execution should not get here'))
+      .catch(err => {
+        expect(err.name).to.equal('DataImportError');
+        expect(Object.keys(err.errors)).to.contain('nickname');
+      });
+  });
+
+  it('can import all valid section data from file', async () => {
+    const filepath = path.join(__dirname, 'fixtures/imports/records-academic-session.csv');
+    const importCount = await service.importData(filepath);
+    expect(importCount).to.equal(7);
+
+    const count = await service.getRepository().count();
+    expect(count).to.equal(7);
+  });
+
+  it('import fails with any invalid record within file', async () => {
+    const filepath = path.join(__dirname, 'fixtures/imports/records-with-invalid-academic-session.csv');
+    return service
+      .importData(filepath)
+      .then(_ => expect.fail('execution should not get here'))
+      .catch(err => {
+        expect(err.name).to.equal('DataImportError');
+        expect(err).to.have.property('lineno');
+        expect(err.errors).to.not.be.empty;
+      });
+  });
+
+  it('reports zero import when reading invalid file (binary file)', () => {
+    const filepath = path.join(__dirname, 'fixtures/imports/binary-file.xyz');
+    return service
+      .importData(filepath)
+      .then(count => expect(count).to.equal(0))
+      .catch(err => expect.fail(`execution should not get here: ${err}`));
   });
 
 });
