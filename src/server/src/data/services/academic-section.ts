@@ -44,10 +44,17 @@ export default class AcademicSectionService extends EntityService<AcademicSectio
    * Finds and returns a persisted Academic section object from storage.
    */
   findByIdent(ident?: number | string, options?: FindOneOptions<AcademicSection>): Promise<AcademicSection> {
-    return this.getRepositoryFor(AcademicSection)
+    let whereClause: Dictionary[] | null = null;
+    if (typeof ident === 'string' && ident.startsWith('$ref:')) {
+      const [field, value] = ident.substr(5).split('=');
+      whereClause = [{[field]: value}];
+    }
+
+    return this
+      .getRepositoryFor(AcademicSection)
       .findOne({
         ...options,
-        where: [{id: ident}, {uuid: ident}, {code: ident}],
+        where: whereClause || [{id: ident}, {uuid: ident}, {code: ident}],
         relations: [...((options && options.relations) || []), 'parent']
       })
       .then(section => {
@@ -66,7 +73,7 @@ export default class AcademicSectionService extends EntityService<AcademicSectio
   }
 
   async importData(filepath: string): Promise<number> {
-    logger.debug('starting academic data import...');
+    logger.debug('starting academic section data import...');
     if (!fs.existsSync(filepath)) {
       throw new DataImportError(`File not found: ${filepath}`);
     }
@@ -84,7 +91,7 @@ export default class AcademicSectionService extends EntityService<AcademicSectio
       throw new DataImportError(errorMessage);
     }
 
-    logger.debug('starting a transaction for save records ...');
+    logger.debug('starting transaction for saving records ...');
     return this.manager.transaction(async ts => {
       const repository = ts.getRepository(AcademicSection);
 

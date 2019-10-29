@@ -164,7 +164,7 @@ describe('# academic-section service & data import', async () => {
   });
 
   it('import fails when file for processing is not found', () => {
-    const filepath = path.join(__dirname, 'fixtures/imaginary-no-existing-file.csv');
+    const filepath = path.join(__dirname, 'fixtures/fake-path/non-existing-file.csv');
     return service
       .importData(filepath)
       .then(_ => expect.fail('execution should not get here'))
@@ -175,7 +175,7 @@ describe('# academic-section service & data import', async () => {
   });
 
   it('import fails when file has rows violating unique constraint', () => {
-    const filepath = path.join(__dirname, 'fixtures/imports/records-with-duplicate-academic-session.csv');
+    const filepath = path.join(__dirname, 'fixtures/imports/academic-session-records-violating-uniq-constraint.csv');
     return service
       .importData(filepath)
       .then(_ => expect.fail('execution should not get here'))
@@ -186,12 +186,31 @@ describe('# academic-section service & data import', async () => {
   });
 
   it('can import all valid section data from file', async () => {
-    const filepath = path.join(__dirname, 'fixtures/imports/records-academic-session.csv');
+    const filepath = path.join(__dirname, 'fixtures/imports/academic-session-records.csv');
     const importCount = await service.importData(filepath);
     expect(importCount).to.equal(7);
 
     const count = await service.getRepository().count();
     expect(count).to.equal(7);
+  });
+
+  it('can import valid section data with intended relationships', async () => {
+    const sectionConn = await getTestDbConnection('test-section+import#2');
+    const sectionService = sectionConn.getCustomRepository(AcademicSectionService);
+
+    const filepath = path.join(__dirname, 'fixtures/imports/academic-session-records.csv');
+    const importCount = await sectionService.importData(filepath);
+    expect(importCount).to.equal(7);
+
+    const kigelia = await sectionService.getRepository().find({
+      where: { nickname: 'KUT' },
+      relations: ['parent', 'children']
+    });
+
+    expect(kigelia).to.not.be.empty;
+    expect(kigelia[0].parent).to.be.null;
+    expect(kigelia[0].children).to.not.be.empty;
+    expect(kigelia[0].children.length).to.equal(2);
   });
 
   it('import fails with any invalid record within file', async () => {
