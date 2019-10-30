@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { EntityManager, Not, Repository } from 'typeorm';
+import { EntityManager, Not } from 'typeorm';
 import { AcademicPeriod, AcademicSection } from '../models';
 import { AcademicPeriodData } from '../schemas';
 import { EntityError, IValidator } from '../types';
@@ -14,24 +14,31 @@ export class ParentAcademicPeriodValidator implements IValidator<AcademicPeriod,
     errors: EntityError<AcademicPeriodData>
   ): Promise<AcademicPeriodData> {
     if (values.parentId) {
-      const repository = this.manager.getRepository(AcademicPeriod);
-      const parents = await repository.find({
-        where: { id: values.parentId },
-        relations: ['parent', 'academicSection']
-      });
+      const options = { relations: ['academicSection'] };
+      try {
+        values.parent = await this.manager
+          .connection
+          .findEntityServiceFor(AcademicPeriod)
+          .findByIdent(values.parentId, options);
 
-      values.parent = (parents || [])[0];
+        values.parentId = values.parent.id;
+      } catch (err) {
+        errors.parentId = err.message;
+        return values;
+      }
+
       if (!values.parent) {
         errors.parentId = `Parent academic period not found: ${values.parentId}`;
-        return;
+        return values;
       }
 
-      if (!values.academicSectionId && !values.parent.academicSection) {
-        errors.parentId = `School not found for parent with id '${values.parentId}'`;
-        return;
+      if (!values.academicSectionId) {
+        if (!values.parent.academicSection) {
+          errors.parentId = `Academic Section not found for parent with id '${values.parentId}'`;
+          return values;
+        }
+        values.academicSectionId = values.parent.academicSection.id;
       }
-
-      values.academicSectionId = values.parent.academicSection.id;
     }
     return values;
   }
