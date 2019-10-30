@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { AbstractRepository, EntityManager , FindOneOptions, ObjectType, Repository} from 'typeorm';
 
 
@@ -44,7 +45,7 @@ export interface IValidator<T, U extends Partial<T>> {
 
 export class ValidationError extends Error {
   constructor(public errors: string | {[key: string]: any}) {
-    super(JSON.stringify(errors));
+    super(typeof errors === 'string' ? errors : JSON.stringify(errors));
     this.name = 'VersityValidationError';
   }
 }
@@ -54,7 +55,7 @@ export class DataImportError extends Error {
     public errors: string | {[key: string]: any},
     public lineno: number = -1
   ) {
-    super(JSON.stringify(errors));
+    super(typeof errors === 'string' ? errors : JSON.stringify(errors));
     this.name = 'DataImportError';
   }
 }
