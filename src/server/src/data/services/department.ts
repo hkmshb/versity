@@ -85,6 +85,29 @@ export default class DepartmentService extends EntityService<Department, Departm
   private async validate(schema: ObjectSchema, values: DepartmentData): Promise<DepartmentData> {
     // perform schema validation
     const data: DepartmentData = schema.validateSync(values);
+    let academicSection: AcademicSection = null;
+
+    if (!values.id && !data.academicSectionId) { // neither a create nor update command
+      throw new ValidationError(`Academic Section not specified: ${data}`, 'data', 'academicSectionId');
+    }
+
+    // check if academic section for department exists and academic section is a faculty
+    if (data.academicSectionId) {
+      const asRepo = this.getRepositoryFor(AcademicSection); // academic section Repository
+      academicSection = await asRepo.findOne(data.academicSectionId, {relations: ['parent']});
+      if (!academicSection) {
+        throw new ValidationError(
+          `Academic section for department not found: ${data.academicSectionId}`, data, 'academicSectionId'
+        );
+      }
+      // check if the academic section is a school
+      if (!academicSection.parent) {
+        throw new ValidationError(
+          `Academic section is a school and not a faculty: ${data.academicSectionId}`, data, 'academicSectionId'
+        );
+      }
+      data.academicSection = academicSection;
+    }
 
     // more business logic validations
     let whereCondition: string = 'department.name = :name';
@@ -96,22 +119,20 @@ export default class DepartmentService extends EntityService<Department, Departm
     const repository = this.getRepository();
     const found = await repository
       .createQueryBuilder(Department.name)
+      .leftJoinAndSelect(`${Department.name}.academicSection`, 'academicSection')
       .where(whereCondition, data)
-      .getOne();
+      .getMany()
+      .then(departments => {
+        if (!data.academicSectionId) {
+          return departments[0];
+        }
+        return departments.filter(
+          d => d.academicSection && (d.academicSection.id === data.academicSectionId)
+        )[0];
+      });
 
     if (found) {
       throw new ValidationError(`name ${values.name} already in use`, data, `name`);
-    }
-
-    // check school if schoolId is given
-    if (data.schoolId) {
-      const schoolRepository = this.getRepositoryFor(AcademicSection);
-      const school = await schoolRepository.findOne(data.schoolId, {relations: ['parent']});
-      if (!school) {
-        throw new ValidationError(`Parent school for department not found: ${data.schoolId}`, data, 'schoolId');
-      }
-
-      data.school = school;
     }
 
     return data;
