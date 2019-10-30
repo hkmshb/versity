@@ -2,8 +2,7 @@ sn,name,code,nickname,addrStreet,addrTown,addrState,parentId
 1,Baobab University,baobab-university,BU,No. 88 Baobab Avenue,Bao,"Baobab, Bao-Country",
 2,Marula University,marula-university,MU,,,,
 3,Kigelia University of Technology,kigelia-university-of-technology,KUT,No 7 Kigelia Avenue,Kig,"Kigelia, Kig-Country",
-4,School of Engineering,school-of-engineering,KUT-SOENG,,,,KUT
-5,School of Agriculture,school-of-agriculture,KUT-SOAGRIC,,,,kigelia-university-of-technology
+4,School of Engineering,school-of-engineering,KUT-SOENG,,,,$ref:nickname=KUT
+5,School of Agriculture,school-of-agriculture,KUT-SOAGRIC,,,,$ref:code=kigelia-university-of-technology
 6,Imberbe University,imberbe-university,IU,,,,
-7,School of Engineering,school-of-engineering,IU-SOENG,,,,IU
-8,Mallow University,mallow-university,MU,,,,
+7,School of Engineering,school-of-engineering,IU-SOENG,,,,$ref:nickname=IU

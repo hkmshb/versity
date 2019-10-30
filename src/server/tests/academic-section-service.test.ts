@@ -70,8 +70,9 @@ describe('# academic-section service & data validation tests', async () => {
       .createAndSave(values)
       .then(_ => { throw new Error('Execution should not get here'); })
       .catch(err => {
-        expect(err.name).to.equal('ValidationError');
-        expect(err.message.startsWith(`${entry.name} already in use`)).to.be.true;
+        expect(err.name).to.equal('VersityValidationError');
+        expect(err.errors).has.property(entry.name);
+        expect(err.errors[entry.name].startsWith(`${entry.name} already in use`)).to.be.true;
       });
   });
 
@@ -90,14 +91,15 @@ describe('# academic-section service & data validation tests', async () => {
 
     const schoolUpdate = {...school2, name: 'school.90210+'};
     return service.updateAndSave(schoolUpdate)
-      .then(_ => { throw new Error('Execution should not get here'); })
+      .then(_ => expect.fail('execution should not get here'))
       .catch(err => {
-        expect(err.name).to.equal('ValidationError');
-        expect(err.message.startsWith('name already in use')).to.be.true;
+        expect(err.name).to.equal('VersityValidationError');
+        expect(err.errors).has.property('name');
+        expect(err.errors.name.startsWith('name already in use')).to.be.true;
       });
   });
 
-  it('should enforce one-level deep school hierarchy when creating schools', () => {
+  it('should enforce one-level deep school hierarchy when creating academic sections', () => {
     const service = conn.findEntityServiceFor(AcademicSection);
     return service.createAndSave({
       name: 'school.name#paent', code: 'school-name#parent', nickname: 'sn#p'
@@ -122,10 +124,10 @@ describe('# academic-section service & data validation tests', async () => {
         name: 'school.name#level2', code: 'school-name#level2', nickname: 'sn#l2'
       });
     })
-    .then(child2 => { throw new Error('Execution should not get here'); })
+    .then(child2 => expect.fail('execution should not get here'))
     .catch(err => {
-      expect(err.name).to.equal('ValidationError');
-      expect(err.message).to.equal('Academic section hierarchical relationships cannot exceed 1 level');
+      expect(err.name).to.equal('VersityValidationError');
+      expect(err.errors.parent).to.equal('Academic section hierarchical relationships cannot exceed 1 level');
     });
   });
 
@@ -145,10 +147,10 @@ describe('# academic-section service & data validation tests', async () => {
       id: institution.id, parentId: school.id,
       name: 'Friends', code: 'friends', nickname: 'friends'
     })
-    .then(_ => { throw new Error('Execution should not get here'); })
+    .then(_ => expect.fail('execution should not get here'))
     .catch(err => {
-      expect(err.name).to.equal('ValidationError');
-      expect(err.message).to.equal('Academic section hierarchical relationships cannot exceed 1 level');
+      expect(err.name).to.equal('VersityValidationError');
+      expect(err.errors.parent).to.equal('Academic section hierarchical relationships cannot exceed 1 level');
     });
   });
 
@@ -164,7 +166,7 @@ describe('# academic-section service & data import', async () => {
   });
 
   it('import fails when file for processing is not found', () => {
-    const filepath = path.join(__dirname, 'fixtures/imaginary-no-existing-file.csv');
+    const filepath = path.join(__dirname, 'fixtures/fake-path/non-existing-file.csv');
     return service
       .importData(filepath)
       .then(_ => expect.fail('execution should not get here'))
@@ -175,7 +177,7 @@ describe('# academic-section service & data import', async () => {
   });
 
   it('import fails when file has rows violating unique constraint', () => {
-    const filepath = path.join(__dirname, 'fixtures/imports/records-with-duplicate-academic-session.csv');
+    const filepath = path.join(__dirname, 'fixtures/imports/academic-session-records-violating-uniq-constraint.csv');
     return service
       .importData(filepath)
       .then(_ => expect.fail('execution should not get here'))
@@ -186,12 +188,31 @@ describe('# academic-section service & data import', async () => {
   });
 
   it('can import all valid section data from file', async () => {
-    const filepath = path.join(__dirname, 'fixtures/imports/records-academic-session.csv');
+    const filepath = path.join(__dirname, 'fixtures/imports/academic-session-records.csv');
     const importCount = await service.importData(filepath);
     expect(importCount).to.equal(7);
 
     const count = await service.getRepository().count();
     expect(count).to.equal(7);
+  });
+
+  it('can import valid section data with intended relationships', async () => {
+    const sectionConn = await getTestDbConnection('test-section+import#2');
+    const sectionService = sectionConn.getCustomRepository(AcademicSectionService);
+
+    const filepath = path.join(__dirname, 'fixtures/imports/academic-session-records.csv');
+    const importCount = await sectionService.importData(filepath);
+    expect(importCount).to.equal(7);
+
+    const kigelia = await sectionService.getRepository().find({
+      where: { nickname: 'KUT' },
+      relations: ['parent', 'children']
+    });
+
+    expect(kigelia).to.not.be.empty;
+    expect(kigelia[0].parent).to.be.null;
+    expect(kigelia[0].children).to.not.be.empty;
+    expect(kigelia[0].children.length).to.equal(2);
   });
 
   it('import fails with any invalid record within file', async () => {
