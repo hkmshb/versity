@@ -6,7 +6,8 @@ import { AcademicPeriodData } from '../src/data/schemas';
 import { AcademicPeriodService, AcademicSectionService } from '../src/data/services';
 import { EntityError } from '../src/data/types';
 import {
-  ParentAcademicPeriodValidator
+  ParentAcademicPeriodValidator,
+  ReferencedAcademicSectionValidator
 } from '../src/data/validators/academic-period';
 import { getTestDbConnection } from './test-utils';
 
@@ -41,7 +42,22 @@ describe('# academic-period validator :: parent academic period', () => {
   });
 
   it('can resolve academic section Id provided as a reference string', async () => {
-    expect.fail('yet to be implemented...');
+    const validator = new ReferencedAcademicSectionValidator(conn.manager);
+    const values = {
+      name: '2019/2020 Session',
+      code: '2019-2020-session',
+      academicSectionId: '$ref:nickname=KUT'
+    };
+
+    const errors: EntityError<AcademicPeriodData> = {};
+    return validator
+      .check(values, errors)
+      .then(data => {
+        expect(data.academicSection).to.not.be.null;
+        expect(data.academicSection).to.not.be.undefined;
+        expect(data.academicSectionId).to.equal(data.academicSection.id);
+        expect(data.academicSection.nickname).to.equal('KUT');
+      });
   });
 
   it('can resolve parent Id provided as a reference string', async () => {

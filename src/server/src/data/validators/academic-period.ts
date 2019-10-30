@@ -65,6 +65,8 @@ export class ReferencedAcademicSectionValidator implements IValidator<AcademicPe
         errors.academicSectionId = `AcademicSection not found: ${values.academicSectionId}`;
         return;
       }
+
+      values.academicSectionId = values.academicSection.id;
     }
 
     // ensure associated school is an institution thus it mustn't have a parent
