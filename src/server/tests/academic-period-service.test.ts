@@ -3,8 +3,10 @@ import * as chai from 'chai';
 import * as mocha from 'mocha';
 import { itParam } from 'mocha-param';
 import moment from 'moment';
+import path from 'path';
 import { Connection } from '../src/data';
 import { AcademicPeriod, AcademicSection } from '../src/data/models';
+import { AcademicPeriodService, AcademicSectionService } from '../src/data/services';
 import { EntityService } from '../src/data/types';
 import { getTestDbConnection } from './test-utils';
 
@@ -13,7 +15,7 @@ const expect = chai.expect;
 const DATE_FMT = 'YYYY-MM-DD';
 
 
-describe('# academic period service & data validation tests', async () => {
+describe('# academic-period service & data validation tests', async () => {
   let conn: Connection;
   let school: AcademicSection = null;
   let institution: AcademicSection = null;
@@ -260,6 +262,77 @@ describe('# academic period service & data validation tests', async () => {
       .then(semester => {
         expect(semester.id).to.be.greaterThan(0);
       });
+  });
+
+});
+
+describe('# academic-period service & data import', async () => {
+  let conn: Connection;
+  let service: AcademicPeriodService;
+
+  before(async () => {
+    conn = await getTestDbConnection('test-period+import');
+    service = conn.getCustomRepository(AcademicPeriodService);
+
+    // import academic section data
+    const filepath = path.join(__dirname, 'fixtures/imports/academic-session-records.csv');
+    const sectionService = conn.getCustomRepository(AcademicSectionService);
+    await sectionService.importData(filepath);
+  });
+
+  it('import fails when file for processing is not found', () => {
+    const filepath = path.join(__dirname, 'fixtures/fake-path/non-existing-file.csv');
+    return service
+      .importData(filepath)
+      .then(_ => expect.fail('execution should not get here'))
+      .catch(err => {
+        expect(err.name).to.equal('DataImportError');
+        expect(err.errors.startsWith('File not found')).to.be.true;
+      });
+  });
+
+  it('import fails when file has rows violating unique constraints', () => {
+    const filepath = path.join(__dirname, 'fixtures/imports/academic-period-records-violating-uniq-constraint.csv');
+    return service
+      .importData(filepath)
+      .then(_ => expect.fail('execution should not get here'))
+      .catch(err => {
+        expect(err.name).to.equal('DataImportError');
+        expect(err.lineno).to.equal(6);
+      });
+  });
+
+  it('can import all valid period data from file', async () => {
+    const filepath = path.join(__dirname, 'fixtures/imports/academic-period-records.csv');
+    const importCount = await service.importData(filepath);
+    expect(importCount).to.equal(6);
+
+    const count = await service.getRepository().count();
+    expect(count).to.equal(6);
+  });
+
+  it('can import valid period data with intended inter relationships', async () => {
+    const periodConn = await getTestDbConnection('test-period+import#2');
+    const sectionService = periodConn.getCustomRepository(AcademicSectionService);
+    const periodService = periodConn.getCustomRepository(AcademicPeriodService);
+
+    let filepath = path.join(__dirname, 'fixtures/imports/academic-session-records.csv');
+    let importCount = await sectionService.importData(filepath);
+    expect(importCount).to.equal(7);
+
+    filepath = path.join(__dirname, 'fixtures/imports/academic-period-records.csv');
+    importCount = await periodService.importData(filepath);
+    expect(importCount).to.equal(6);
+
+    const period = await periodService.getRepository().find({
+      where: { code: '2018-2019-session'},
+      relations: ['parent', 'children']
+    });
+
+    expect(period).to.not.be.empty;
+    expect(period[0].parent).to.be.null;
+    expect(period[0].children).to.not.be.empty;
+    expect(period[0].children.length).to.equal(2);
   });
 
 });

@@ -1,0 +1,4 @@
+sn,name,code,dateBegin,dateEnd,parentId,academicSectionId
+1,2019/2020 Session,2019-2020-session,,,,$ref:nickname=KUT
+2,1st Semester,1st-semester,2020-01-01,2020-03-31,2019-2020-sesssion,
+3,2nd Semester,2nd-semester,2020-04-01,2020-06-30,2019-2020-sesssion,

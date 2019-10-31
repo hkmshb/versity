@@ -1,9 +1,14 @@
+import fs from 'fs';
+import _ from 'lodash';
 import moment from 'moment';
 import { EntityManager, EntityRepository, FindOneOptions, Repository } from 'typeorm';
+import xlsx from 'xlsx';
 import { ObjectSchema, ValidationError as YupError } from 'yup';
-import { AcademicPeriod, AcademicSection } from '../models';
+import { Dictionary } from '../../types';
+import { logger } from '../../utils';
+import { AcademicPeriod } from '../models';
 import { AcademicPeriodData, AcademicPeriodSchema, RequiredIdSchema } from '../schemas';
-import { EntityError, EntityService, ValidationError } from '../types';
+import { DataImportError, EntityError, EntityService, ValidationError } from '../types';
 import {
   DateRangeValidator,
   ParentAcademicPeriodValidator,
@@ -47,10 +52,17 @@ export default class AcademicPeriodService extends EntityService<AcademicPeriod,
   }
 
   findByIdent(ident?: number | string, options?: FindOneOptions<AcademicPeriod>): Promise<AcademicPeriod> {
-    return this.getRepositoryFor(AcademicPeriod)
+    let whereClause: Dictionary[] | null = null;
+    if (typeof ident === 'string' && ident.startsWith('$ref:')) {
+      const [field, value] = ident.substr(5).split('=');
+      whereClause = [{[field]: value}];
+    }
+
+    return this
+      .getRepositoryFor(AcademicPeriod)
       .findOne({
         ...options,
-        where: [{id: ident}, {uuid: ident}, {code: ident}],
+        where: whereClause || [{id: ident}, {uuid: ident}, {code: ident}],
         relations: [...((options && options.relations) || []), 'parent']
       })
       .then(period => {
@@ -68,13 +80,56 @@ export default class AcademicPeriodService extends EntityService<AcademicPeriod,
     return this.getRepositoryFor(AcademicPeriod);
   }
 
+  async importData(filepath: string): Promise<number> {
+    logger.debug('starting academic period data import ...');
+    if (!fs.existsSync(filepath)) {
+      throw new DataImportError(`File not found: ${filepath}`);
+    }
+
+    let rows: AcademicPeriodData[] = [];
+    try {
+      logger.debug('reading data file ...');
+      const workbook = xlsx.readFile(filepath, {cellDates: true});
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      rows = xlsx.utils.sheet_to_json(sheet);
+    } catch (err) {
+      const errorMessage = `File processing failed: ${err}`;
+      logger.error(errorMessage);
+      throw new DataImportError(errorMessage);
+    }
+
+    logger.debug('starting transaction for saving records ...');
+    return this.manager.transaction(async trans => {
+      const repository = trans.getRepository(AcademicPeriod);
+
+      let index = 1;
+      for (const row of rows) {
+        index += 1;
+        try {
+          const data = await this.validate(AcademicPeriodSchema, row);
+          const instance = trans.create(AcademicPeriod, data);
+          await trans.save(instance);
+        } catch (err) {
+          logger.error(err.toString());
+          if (err.path) {
+            throw new DataImportError({[err.path]: err.errors}, index);
+          }
+          throw new DataImportError(err.errors || err.message, index);
+        }
+      }
+
+      return rows.length;
+    });
+  }
+
   private async validate(schema: ObjectSchema, values: AcademicPeriodData): Promise<AcademicPeriodData> {
     const errors: EntityError<AcademicPeriodData> = {};
 
     // perform pre-validations (needs to be synchronous)
     for (const validator of this.prevalidators) {
       values = await validator.check(values, errors);
-      if (!values && errors) {
+      if (!_.isEmpty(errors)) {
         throw new ValidationError(errors);
       }
     }
@@ -87,7 +142,7 @@ export default class AcademicPeriodService extends EntityService<AcademicPeriod,
           promises.push(validator.check(data, errors))
         ));
 
-        return Promise.all(promises).then(_ => {
+        return Promise.all(promises).then(results => {
           if (Object.keys(errors).length > 0) {
             throw new ValidationError(errors);
           }
