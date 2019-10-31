@@ -1,14 +1,27 @@
 import { readFileSync } from 'fs';
+import _ from 'lodash';
 import { parse } from 'papaparse';
-import { EntityRepository, FindOneOptions, Repository } from 'typeorm';
-import { number, ObjectSchema, ValidationError } from 'yup';
+import { EntityManager, EntityRepository, FindOneOptions, Repository } from 'typeorm';
+import { number, ObjectSchema, ValidationError as YupError } from 'yup';
 import { AcademicSection, Department } from '../models';
 import { DepartmentData, DepartmentSchema, RequiredIdSchema } from '../schemas';
-import { EntityService } from '../types';
+import { DataImportError, EntityError, EntityService, ValidationError } from '../types';
+import {
+  DepartmentParentAcademicSectionValidator,
+  DepartmentUniquenessValidator,
+  OperationTypeValidator
+} from '../validators/department';
 
 
 @EntityRepository(Department)
 export default class DepartmentService extends EntityService<Department, DepartmentData> {
+
+  constructor(manager: EntityManager) {
+    super(manager);
+    this.prevalidators.push(new OperationTypeValidator(this.manager));
+    this.validators.push(new DepartmentParentAcademicSectionValidator(this.manager));
+    this.validators.push(new DepartmentUniquenessValidator(this.manager));
+  }
 
   /**
    * Creates a Department object from provided arguments and persists the object to storage.
@@ -29,7 +42,7 @@ export default class DepartmentService extends EntityService<Department, Departm
       .findOne(departmentId);
 
     if (!department) {
-      throw new ValidationError(`Department not found for ${departmentId}`, values, 'id');
+      throw new YupError(`Department not found for ${departmentId}`, values, 'id');
     }
 
     const data = await this.validate(DepartmentSchema, values);
@@ -83,58 +96,36 @@ export default class DepartmentService extends EntityService<Department, Departm
   }
 
   private async validate(schema: ObjectSchema, values: DepartmentData): Promise<DepartmentData> {
-    // perform schema validation
-    const data: DepartmentData = schema.validateSync(values);
-    let academicSection: AcademicSection = null;
+    const errors: EntityError<DepartmentData> = {};
 
-    if (!values.id && !data.academicSectionId) { // neither a create nor update command
-      throw new ValidationError(`Academic Section not specified: ${data}`, 'data', 'academicSectionId');
-    }
-
-    // check if academic section for department exists and academic section is a faculty
-    if (data.academicSectionId) {
-      const asRepo = this.getRepositoryFor(AcademicSection); // academic section Repository
-      academicSection = await asRepo.findOne(data.academicSectionId, {relations: ['parent']});
-      if (!academicSection) {
-        throw new ValidationError(
-          `Academic section for department not found: ${data.academicSectionId}`, data, 'academicSectionId'
-        );
+    // perform pre-validations (needs to be synchronous)
+    for (const validator of this.prevalidators) {
+      values = await validator.check(values, errors);
+      if (!_.isEmpty(errors)) {
+        throw new ValidationError(errors);
       }
-      // check if the academic section is a school
-      if (!academicSection.parent) {
-        throw new ValidationError(
-          `Academic section is a school and not a faculty: ${data.academicSectionId}`, data, 'academicSectionId'
-        );
-      }
-      data.academicSection = academicSection;
     }
 
-    // more business logic validations
-    let whereCondition: string = 'department.name = :name';
+    // perform schema validation & other post validations
+    return schema.validate(values)
+      .then(data => {
+        const promises = [];
+        this.validators.forEach(validator => (
+          promises.push(validator.check(data, errors))
+        ));
 
-    if (values.id) {
-      whereCondition = `(${whereCondition}) AND (department.id != :id)`;
-    }
-
-    const repository = this.getRepository();
-    const found = await repository
-      .createQueryBuilder(Department.name)
-      .leftJoinAndSelect(`${Department.name}.academicSection`, 'academicSection')
-      .where(whereCondition, data)
-      .getMany()
-      .then(departments => {
-        if (!data.academicSectionId) {
-          return departments[0];
+        return Promise.all(promises).then(results => {
+          if (Object.keys(errors).length > 0) {
+            throw new ValidationError(errors);
+          }
+          return data;
+        });
+      })
+      .catch(err => {
+        if (err.path) {
+          err = new ValidationError({[err.path]: err.errors});
         }
-        return departments.filter(
-          d => d.academicSection && (d.academicSection.id === data.academicSectionId)
-        )[0];
+        throw err;
       });
-
-    if (found) {
-      throw new ValidationError(`name ${values.name} already in use`, data, `name`);
-    }
-
-    return data;
   }
 }
