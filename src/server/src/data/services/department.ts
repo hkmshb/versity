@@ -1,15 +1,16 @@
-import { readFileSync } from 'fs';
+import fs from 'fs';
 import _ from 'lodash';
-import { parse } from 'papaparse';
 import { EntityManager, EntityRepository, FindOneOptions, Repository } from 'typeorm';
+import xlsx from 'xlsx';
 import { number, ObjectSchema, ValidationError as YupError } from 'yup';
+import { logger } from '../../utils';
 import { AcademicSection, Department } from '../models';
 import { DepartmentData, DepartmentSchema, RequiredIdSchema } from '../schemas';
 import { DataImportError, EntityError, EntityService, ValidationError } from '../types';
 import {
-  DepartmentParentAcademicSectionValidator,
   DepartmentUniquenessValidator,
-  OperationTypeValidator
+  OperationTypeValidator,
+  ReferenceAcademicSectionValidator
 } from '../validators/department';
 
 
@@ -19,7 +20,7 @@ export default class DepartmentService extends EntityService<Department, Departm
   constructor(manager: EntityManager) {
     super(manager);
     this.prevalidators.push(new OperationTypeValidator(this.manager));
-    this.validators.push(new DepartmentParentAcademicSectionValidator(this.manager));
+    this.validators.push(new ReferenceAcademicSectionValidator(this.manager));
     this.validators.push(new DepartmentUniquenessValidator(this.manager));
   }
 
@@ -53,24 +54,46 @@ export default class DepartmentService extends EntityService<Department, Departm
   /**
    * Imports departments from file
    */
-  async importRecords(filepath: string): Promise<number> {
-    const file = readFileSync(filepath, 'utf8');
-    // let count = 0;
-    const results = parse(file, {header: true}).data;
-    return await this.manager.transaction<number>(async transactionalEntityManager => {
-      let count = 0;
-      results.forEach(async (department: Department, lineNumber: number, array: any[]) => {
-        const data = await this.validate(DepartmentSchema, department);
-        if (!data) {
-          throw new Error(`Invalid department data on line ${lineNumber + 1}`);
+  async importData(filepath: string): Promise<number> {
+    logger.debug('starting department data import...');
+    if (!fs.existsSync(filepath)) {
+      throw new DataImportError(`File not found: ${filepath}`);
+    }
+
+    let rows: DepartmentData[] = [];
+    try {
+      logger.debug('reading data file ...');
+      const workbook = xlsx.readFile(filepath);
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      rows = xlsx.utils.sheet_to_json(sheet);
+    } catch (err) {
+      const errorMessage = `File processing failed: ${err}`;
+      logger.error(errorMessage);
+      throw new DataImportError(errorMessage);
+    }
+
+    logger.debug('starting transaction for saving records ...');
+    return this.manager.transaction(async trans => {
+      let index = 0;
+      for (const row of rows) {
+        index += 1;
+        try {
+          const data = await this.validate(DepartmentSchema, row);
+          const instance = trans.create(Department, data);
+          await trans.save(instance);
+        } catch (err) {
+          logger.error(err.toString());
+          if (err.path) {
+            throw new DataImportError({[err.path]: err.errors}, index);
+          }
+          throw new DataImportError(err.errors || err.message, index);
         }
-        const instance = transactionalEntityManager.create(Department, data);
-        transactionalEntityManager.save(instance);
-        count++;
-      });
-      return count;
+      }
+      return rows.length;
     });
   }
+
 
   /**
    * Finds and returns a persisted Department object from storage.

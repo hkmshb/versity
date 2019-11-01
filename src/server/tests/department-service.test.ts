@@ -1,9 +1,10 @@
 // tslint:disable:no-unused-expression
 import chai from 'chai';
 import * as mocha from 'mocha';
+import path from 'path';
 import { Connection } from '../src/data';
 import { AcademicSection, Department } from '../src/data/models';
-import { DepartmentService } from '../src/data/services';
+import { AcademicSectionService, DepartmentService } from '../src/data/services';
 import { getTestDbConnection } from './test-utils';
 
 
@@ -74,7 +75,7 @@ describe('# department service tests', () => {
      departmentService
      .createAndSave({name, academicSectionId: facultyArts.id})
      .then(dept => { throw new Error(`expect create and save to fail ${dept}`); })
-     .catch(err => { expect(err.errors).to.not.be.empty; });
+     .catch(err => {  expect(err.errors).to.not.be.empty; });
     });
  });
 
@@ -133,4 +134,29 @@ describe('# department service tests', () => {
   //   expect(count).to.equal(8);
   //   done();
   // });
+});
+
+
+describe('# department service & data import', async () => {
+  let conn: Connection;
+  let service: DepartmentService;
+
+  before(async () => {
+    conn = await getTestDbConnection('test-department+import');
+    service = conn.getCustomRepository(DepartmentService);
+
+    // import academic section data
+    const filepath = path.join(__dirname, 'fixtures/imports/academic-session-records.csv');
+    const sectionService = conn.getCustomRepository(AcademicSectionService);
+    await sectionService.importData(filepath);
+  });
+
+  it('can import all valid department data from file', async () => {
+    const filepath = path.join(__dirname, 'fixtures/imports/department-records.csv');
+    const importCount = await service.importData(filepath);
+    expect(importCount).to.equal(6);
+
+    const count = await service.getRepository().count();
+    expect(count).to.equal(6);
+  });
 });

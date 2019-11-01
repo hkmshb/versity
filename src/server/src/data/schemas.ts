@@ -10,7 +10,7 @@ export const buildSchemaForRequiredFields = (names: string[]) => {
 
 
 export interface DepartmentData extends Partial<Department> {
-  academicSectionId?: number;
+  academicSectionId?: number | string;
 }
 
 
@@ -60,6 +60,6 @@ export const AcademicSectionSchema = yup.object().shape({
 export const DepartmentSchema = yup.object().shape({
   id: yup.number(),
   uuid: yup.string(),
-  academicSectionId: yup.number(),
+  academicSectionId: yup.string().required(),
   name: yup.string().required().min(4)
 });

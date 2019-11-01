@@ -16,20 +16,22 @@ export class OperationTypeValidator implements IValidator<Department, Department
 }
 
 
-export class DepartmentParentAcademicSectionValidator implements IValidator<Department, DepartmentData> {
+export class ReferenceAcademicSectionValidator implements IValidator<Department, DepartmentData> {
   constructor(public manager: EntityManager) {}
 
   async check(values: DepartmentData, errors: EntityError<DepartmentData>): Promise<DepartmentData> {
     if (values.academicSectionId) {
-      const asRepo = this.manager.getRepository(AcademicSection); // academic section repository
-      const academicSection = await asRepo.findOne(values.academicSectionId, {relations: ['parent']});
-      if (!academicSection) {
-        errors.academicSectionId = `Parent academic section not found: ${values.academicSectionId}`;
+      const sectionService = this.manager.connection.findEntityServiceFor(AcademicSection);
+      let academicSection = null;
+      try {
+        academicSection = await sectionService.findByIdent(values.academicSectionId);
+      } catch (err) {
+        errors.academicSectionId = `Reference academic section not found: ${values.academicSectionId}`;
         return values;
       }
       // check if the academic section is a school
       if (!academicSection.parent) {
-        errors.academicSectionId = `Parent academic section is not a faculty: ${values.academicSectionId}`;
+        errors.academicSectionId = `Reference academic section is not a faculty: ${values.academicSectionId}`;
         return values;
       }
       values.academicSection = academicSection;
@@ -59,7 +61,8 @@ export class DepartmentUniquenessValidator implements IValidator<Department, Dep
         return departments[0];
       }
       return departments.filter(
-        d => d.academicSection && (d.academicSection.id === values.academicSectionId)
+        // tslint:disable:triple-equals
+        d =>  d.academicSection && (d.academicSection.id == values.academicSectionId)
       )[0];
     });
 
