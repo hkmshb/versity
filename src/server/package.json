@@ -4,6 +4,22 @@
   "private": true,
   "description": "Versity API server",
   "main": "src/index.ts",
+  "bin": {
+    "versity": "./bin/run"
+  },
+  "oclif": {
+    "commands": "./src/cli/commands",
+    "bin": "versity",
+    "plugins": [
+      "@oclif/plugin-help"
+    ]
+  },
+  "files": [
+    "/bin",
+    "/build",
+    "/npm-shrinkwrap.json",
+    "/oclif.manifest.json"
+  ],
   "scripts": {
     "build": "rm -rf ./build && tsc",
     "watch": "tsc --watch",
@@ -13,16 +29,23 @@
     "lint": "tslint --fix -c tslint.json 'src/**/*.ts' 'tests/**/*.test.ts'"
   },
   "dependencies": {
+    "@oclif/command": "^1.5.19",
+    "@oclif/config": "^1.13.3",
+    "@oclif/plugin-help": "^2.2.1",
     "body-parser": "^1.19.0",
     "express": "^4.17.1",
     "express-pino-logger": "^4.0.0",
     "moment": "^2.24.0",
     "reflect-metadata": "^0.1.13",
+    "tslib": "^1.10.0",
     "typeorm": "^0.2.18",
     "xlsx": "^0.15.1",
     "yup": "^0.27.0"
   },
   "devDependencies": {
+    "@oclif/dev-cli": "^1.22.2",
+    "@oclif/test": "^1.2.5",
+    "@oclif/tslint": "^3.1.1",
     "@types/chai": "^4.1.7",
     "@types/express": "^4.17.0",
     "@types/mocha": "^5.2.7",
