@@ -37,21 +37,21 @@ describe('# department service tests', () => {
   it('should fail validation for missing academic section', () => {
     departmentService
     .createAndSave({name: 'Food Engineering'})
-    .then(dept => { throw new Error(`expect create and save to fail ${dept}`); })
+    .then(dept => { expect.fail(`expect create and save to fail ${dept}`); })
     .catch(err => expect(err.errors).to.not.be.empty);
  });
 
   it('should fail validation for non existing academic section', () => {
      departmentService
      .createAndSave({name: 'Electrical Engineering', academicSectionId: 500})
-     .then(dept => { throw new Error(`expect create and save to fail ${dept}`); })
+     .then(dept => { expect.fail(`expect create and save to fail ${dept}`); })
      .catch(err => expect(err.errors).to.not.be.empty);
   });
 
   it('should fail validation for school instead of faculty', () => {
     departmentService
     .createAndSave({name: 'Biomedical Engineering', academicSectionId: school.id})
-    .then(dept => { throw new Error(`expect create and save to fail ${dept}`); })
+    .then(dept => { expect.fail(`expect create and save to fail ${dept}`); })
     .catch(err => expect(err.errors).to.not.be.empty);
  });
 
@@ -74,7 +74,7 @@ describe('# department service tests', () => {
      expect(deptME.id).to.not.be.null;
      departmentService
      .createAndSave({name, academicSectionId: facultyArts.id})
-     .then(dept => { throw new Error(`expect create and save to fail ${dept}`); })
+     .then(dept => { expect.fail(`expect create and save to fail ${dept}`); })
      .catch(err => {  expect(err.errors).to.not.be.empty; });
     });
  });
@@ -91,7 +91,7 @@ describe('# department service tests', () => {
        expect(deptME.id).to.not.be.null;
        departmentService
        .updateAndSave({id: deptME.id, name})
-       .then(dept => { throw new Error(`expect update to fail ${dept}`); })
+       .then(dept => { expect.fail(`expect update to fail ${dept}`); })
        .catch(err => { expect(err.errors).to.not.be.empty; });
       });
     });

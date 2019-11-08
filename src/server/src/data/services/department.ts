@@ -3,6 +3,7 @@ import _ from 'lodash';
 import { EntityManager, EntityRepository, FindOneOptions, Repository } from 'typeorm';
 import xlsx from 'xlsx';
 import { number, ObjectSchema, ValidationError as YupError } from 'yup';
+import { Dictionary } from '../../types';
 import { logger } from '../../utils';
 import { AcademicSection, Department } from '../models';
 import { DepartmentData, DepartmentSchema, RequiredIdSchema } from '../schemas';
@@ -99,13 +100,21 @@ export default class DepartmentService extends EntityService<Department, Departm
    * Finds and returns a persisted Department object from storage.
    */
   findByIdent(ident?: string | number, options?: FindOneOptions<Department>): Promise<Department> {
-    return this.getRepositoryFor(Department)
-      .createQueryBuilder(Department.name)
-      .where('id = :ident OR uuid = :ident', {ident})
-      .getOne()
+    let whereClause: Dictionary[] | null = null;
+    if (typeof ident === 'string' && ident.startsWith('$ref:')) {
+      const [field, value] = ident.substr(5).split('=');
+      whereClause = [{[field]: value}];
+    }
+
+    return this
+      .getRepositoryFor(Department)
+      .findOne({
+        ...options,
+        where: whereClause || [{id: ident}, {uuid: ident}]
+      })
       .then(department => {
         if (!department) {
-          throw new Error(`Department not found for '${ident}'`);
+          throw new Error(`Department period not found for '${ident}'`);
         }
         return department;
       });

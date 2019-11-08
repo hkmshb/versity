@@ -22,7 +22,7 @@ export class ReferenceAcademicSectionValidator implements IValidator<Department,
   async check(values: DepartmentData, errors: EntityError<DepartmentData>): Promise<DepartmentData> {
     if (values.academicSectionId) {
       const sectionService = this.manager.connection.findEntityServiceFor(AcademicSection);
-      let academicSection = null;
+      let academicSection: AcademicSection = null;
       try {
         academicSection = await sectionService.findByIdent(values.academicSectionId);
       } catch (err) {
@@ -35,6 +35,7 @@ export class ReferenceAcademicSectionValidator implements IValidator<Department,
         return values;
       }
       values.academicSection = academicSection;
+      values.academicSectionId = academicSection.id;
       return values;
     }
   }
