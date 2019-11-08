@@ -20,7 +20,7 @@ export abstract class BaseEntity {
 
 export default abstract class NamedEntity extends BaseEntity {
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ type: 'varchar', unique: true, nullable: false })
   name: string;
 
 }

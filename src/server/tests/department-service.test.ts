@@ -96,44 +96,6 @@ describe('# department service tests', () => {
       });
     });
  });
-
-//  it('should fail update when changing belonging academic section to one with an existing department name', () => {
-//    let targetId = 0;
-//    let name = "Computer Engineering";
-//    departmentService
-//    .createAndSave({name: name, academicSectionId: facultyEngineering.id})
-//    .then(dept => expect(dept.id).to.not.be.null);
-
-//    departmentService
-//    .createAndSave({name: name, academicSectionId: facultyArts.id})
-//    .then(dept => { expect(dept.id).to.not.be.null; targetId= dept.id; });
-
-//    departmentService
-//    .updateAndSave({id: targetId, academicSectionId: facultyEngineering.id})
-//    .then(dept => { throw new Error(`expect update to fail ${dept}`) })
-//    .catch(err => {expect(err.errors).to.not.be.empty });
-//  })
-
-//  it('should successfully change academic section', () => {
-//   let targetId = 0;
-//   departmentService
-//   .createAndSave({name: "Environmental Engineering", academicSectionId: facultyEngineering.id})
-//   .then(dept => expect(dept.id).to.not.be.null);
-
-//   departmentService
-//   .createAndSave({name: "Social Engineering", academicSectionId: facultyArts.id})
-//   .then(dept => { expect(dept.id).to.not.be.null; targetId= dept.id; });
-
-//   departmentService
-//   .updateAndSave({id: targetId, academicSectionId: facultyEngineering.id})
-//   .then(dept => { expect(dept.academicSection.id).to.equal(facultyEngineering.id); })
-// })
-
-  // it('should import departments from csv file', async done => {
-  //   const count = await departmentService.importRecords('tests/fixtures/import-docs/departments.csv');
-  //   expect(count).to.equal(8);
-  //   done();
-  // });
 });
 
 
