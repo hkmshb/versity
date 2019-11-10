@@ -34,7 +34,7 @@ export default class AcademicSection extends BaseEntity {
   @OneToMany(type => AcademicSection, section => section.parent)
   children: AcademicSection[];
 
-  @OneToMany(type => Department, department => department.school)
+  @OneToMany(type => Department, department => department.academicSection)
   departments: Department[];
 
   @OneToMany(type => AcademicPeriod, period => period.academicSection)

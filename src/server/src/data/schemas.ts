@@ -1,12 +1,17 @@
 // tslint:disable:interface-name
 import * as yup from 'yup';
-import { AcademicPeriod,  AcademicSection } from './models';
+import { AcademicPeriod,  AcademicSection, Department } from './models';
 
 
 export const buildSchemaForRequiredFields = (names: string[]) => {
   const fields = names.map(name => ({[name]: yup.string().required()}));
   return yup.object().shape(Object.assign({}, ...fields));
 };
+
+
+export interface DepartmentData extends Partial<Department> {
+  academicSectionId?: number | string;
+}
 
 
 export const RequiredIdSchema = yup.object().shape({
@@ -49,4 +54,12 @@ export const AcademicSectionSchema = yup.object().shape({
   addrStreet: yup.string().nullable(),
   addrTown: yup.string().nullable(),
   addrState: yup.string().nullable()
+});
+
+
+export const DepartmentSchema = yup.object().shape({
+  id: yup.number(),
+  uuid: yup.string(),
+  academicSectionId: yup.string().required(),
+  name: yup.string().required().min(4)
 });

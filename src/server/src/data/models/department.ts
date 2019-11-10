@@ -1,16 +1,20 @@
-import { Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, Unique } from 'typeorm';
 import AcademicSection from './academic-section';
-import NamedEntity from './entity';
+import {BaseEntity} from './entity';
 import Lecturer from './lecturer';
 import Programme from './programme';
 
 
 @Entity()
-export default class Department extends NamedEntity {
+@Unique(['academicSection', 'name'])
+export default class Department extends BaseEntity {
+
+  @Column({ type: 'varchar', nullable: false })
+  name: string;
 
   @ManyToOne(type => AcademicSection, section => section.departments)
-  @JoinColumn({ name: 'school_id' })
-  school: AcademicSection;
+  @JoinColumn({ name: 'academic_section_id' })
+  academicSection: AcademicSection;
 
   @OneToMany(type => Programme, programme => programme.department)
   programmes: Programme[];
