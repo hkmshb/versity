@@ -1,4 +1,22 @@
 import {Command, flags} from '@oclif/command';
+import { getDbConnection } from '../../data';
+import { Department } from '../../data/models';
+
+
+async function importRecord(modelType: string, filepath: string): Promise<number> {
+  const connection = await getDbConnection('cli-import');
+  let service = null;
+  switch (modelType.toLowerCase()) {
+    case 'department':
+      service = connection.findEntityServiceFor(Department);
+      break;
+  }
+  if (service) {
+    return await service.importData(filepath);
+  }
+  return 0;
+}
+
 
 class Import extends Command {
   static description = 'import data records from .csv files into database';
@@ -28,7 +46,9 @@ class Import extends Command {
       this.log('model type must be specified with flag "-t"');
       return;
     }
-    this.log(`import data of type ${flags.type} from ${flags.name}`);
+    this.log(`importing data of type ${flags.type.toLowerCase()} from ${flags.name}`);
+    const count = await importRecord(flags.type, flags.name);
+    if (count > 0) { this.log(`import successful: ${count} entities`); } else { this.log('import failed'); }
   }
 }
 
