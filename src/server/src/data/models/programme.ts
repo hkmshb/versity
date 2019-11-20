@@ -7,7 +7,7 @@ import NamedEntity from './entity';
 @Entity()
 export default class Programme extends NamedEntity {
 
-  @Column()
+  @Column({ type: 'integer', nullable: false })
   duration: number;
 
   @ManyToOne(type => Department, department => department.programmes)

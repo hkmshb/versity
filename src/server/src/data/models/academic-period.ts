@@ -1,4 +1,5 @@
 import { Check, Column, Entity, JoinColumn, ManyToOne, OneToMany, Unique } from 'typeorm';
+import { date } from 'yup';
 import AcademicSection from './academic-section';
 import Document from './document';
 import { BaseEntity } from './entity';
@@ -16,10 +17,10 @@ export default class AcademicPeriod extends BaseEntity {
   @Column({ type: 'varchar', nullable: false })
   code: string;
 
-  @Column({ name: 'date_begin', nullable: true })
+  @Column({ type: 'datetime', name: 'date_begin', nullable: true })
   dateBegin: Date;
 
-  @Column({ name: 'date_end', nullable: true })
+  @Column({ type: 'datetime', name: 'date_end', nullable: true })
   dateEnd: Date;
 
   @ManyToOne(type => AcademicPeriod, period => period.children)

@@ -1,5 +1,4 @@
 import { Application } from 'express';
-import 'reflect-metadata';
 import VersityServer from './app';
 import * as conf from './config';
 import { logger } from './utils';

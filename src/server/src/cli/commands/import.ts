@@ -1,12 +1,15 @@
 import {Command, flags} from '@oclif/command';
 import { getDbConnection } from '../../data';
-import { Department } from '../../data/models';
+import { AcademicSection, Department } from '../../data/models';
 
 
 async function importRecord(modelType: string, filepath: string): Promise<number> {
   const connection = await getDbConnection('cli-import');
   let service = null;
   switch (modelType.toLowerCase()) {
+    case 'academic-section':
+      service = connection.findEntityServiceFor(AcademicSection);
+      break;
     case 'department':
       service = connection.findEntityServiceFor(Department);
       break;
@@ -26,7 +29,7 @@ class Import extends Command {
     version: flags.version({char: 'v'}),
     help: flags.help({char: 'h'}),
     // flag with a value (-n, --name=VALUE)
-    name: flags.string({char: 'n', description: 'filename'}),
+    name: flags.string({char: 'p', description: 'filepath'}),
     // flag with a value (-t, --type=VALUE)
     type: flags.string({char: 't', description: 'type of data to import'})
   };
@@ -39,7 +42,7 @@ class Import extends Command {
     // tslint:disable:no-shadowed-variable
     const {args, flags} = this.parse(Import);
     if (!flags.name) {
-      this.log('filename must be specified with flag "-n"');
+      this.log('filepath must be specified with flag "-p"');
       return;
     }
     if (!flags.type) {
