@@ -7,13 +7,13 @@ import Programme from './programme';
 @Entity()
 export default class Course extends NamedEntity {
 
-  @Column({ length: 15, unique: true })
+  @Column({ type: 'varchar', length: 15, unique: true })
   code: string;
 
-  @Column()
+  @Column({type: 'integer', nullable: false })
   unit: number;
 
-  @Column()
+  @Column({ type: 'integer', nullable: false })
   level: number;
 
   @ManyToOne(type => Programme, programme => programme.courses)

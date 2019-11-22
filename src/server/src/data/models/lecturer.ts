@@ -8,17 +8,17 @@ import { BaseEntity } from './entity';
 @Unique(['title', 'firstName', 'lastName'])
 export default class Lecturer extends BaseEntity {
 
-  @Column({ length: 50, nullable: true })
+  @Column({ type: 'varchar', length: 50, nullable: true })
   title: string;
 
-  @Column({ name: 'first_name', length: 50, nullable: false })
+  @Column({ type: 'varchar', name: 'first_name', length: 50, nullable: false })
   firstName: string;
 
-  @Column({ name: 'last_name', length: 50, nullable: true })
+  @Column({ type: 'varchar', name: 'last_name', length: 50, nullable: true })
   lastName: string;
 
   // TODO: use enum
-  @Column()
+  @Column({ type: 'varchar', nullable: false })
   gender: string;
 
   @ManyToOne(type => Department, department => department.lecturers)

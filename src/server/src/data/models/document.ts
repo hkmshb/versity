@@ -9,10 +9,10 @@ import Lecturer from './lecturer';
 export default class Document extends NamedEntity {
 
   // TODO: use enum
-  @Column()
+  @Column('varchar')
   type: string;
 
-  @Column({ name: 'page_count' })
+  @Column({ type: 'integer', name: 'page_count' })
   pageCount: number;
 
   @ManyToOne(type => AcademicPeriod, period => period.documents)
